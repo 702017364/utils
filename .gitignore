@@ -1,0 +1,8 @@
+node_modules
+/dist
+.vscode
+/cjs
+/lib
+/types
+/__*
+/src/index.ts
