@@ -1,5 +1,5 @@
 /**
- * 对象数组转hash(要求主键值为string类型)
+ * 对象数组转hash(要求主键值为string|number类型)
  * @example 
  *  hash8json(
  *    [
@@ -11,7 +11,7 @@
  */
 const hash8json = <
   K extends string | symbol,
-  T extends Record<K, string>
+  T extends Record<K, string | number>
 >(list: T[], key: K) => list.reduce((caches, data) => {
   caches[data[key]] = data
   return caches
