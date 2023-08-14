@@ -12,6 +12,7 @@
   "main": "./cjs/index.js",
   "scripts": {
     "build": "rimraf types & npm run cjs | npm run esm",
+    "init:build": "npm run devs & npm run trove & npm run test:build",
     "cjs": "rimraf cjs & npx tsc -p ./tsconfig.cjs.json",
     "esm": "rimraf lib & npx tsc -p ./tsconfig.esm.json",
     "trove": "node ./__devs/trove.cjs",
@@ -21,7 +22,6 @@
     "test:dev": "npm run test:build & npm run test",
     "test:build": "rimraf __tests & rimraf lib  & node ./__devs/test.cjs",
     "test:all": "npm run devs & npm run test:build & npm run test",
-    "init": "npm run devs & npm run trove & npm run test:build",
     "prepublishOnly": "npm run devs & npm run trove & npm run build"
   },
   "exports": {
