@@ -1,7 +1,7 @@
 /**
- * 值比较(深度浅比较)
+ * 深度相等性比较(弱比较)
  */
-const compareValue = (from: any, to: any) => {
+const deepWeakEqual = (from: any, to: any) => {
   if (typeof from !== 'object'
     || from === null
     || typeof to !== 'object'
@@ -10,14 +10,14 @@ const compareValue = (from: any, to: any) => {
   if (Array.isArray(from) && Array.isArray(to)) {
     if (from.length !== to.length) return false
     return !from.some((t1, index) => {
-      if (!compareValue(t1, to[index])) {
+      if (!deepWeakEqual(t1, to[index])) {
         return true
       }
     })
   } else {
     const caches: Record<string, string> = {}
     for (const key in from) {
-      if (!compareValue(from[key], to[key])) {
+      if (!deepWeakEqual(from[key], to[key])) {
         return false
       } else {
         caches[key] = key
@@ -25,7 +25,7 @@ const compareValue = (from: any, to: any) => {
     }
     for (const key in to) {
       if (key in caches) continue
-      if (!compareValue(from[key], to[key])) {
+      if (!deepWeakEqual(from[key], to[key])) {
         return false
       }
     }
@@ -33,4 +33,4 @@ const compareValue = (from: any, to: any) => {
   return true
 }
 
-export default compareValue
+export default deepWeakEqual
