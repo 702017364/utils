@@ -2,9 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "ESNext",
-    "outDir": "lib",
-    "declaration": true,
-    "declarationDir": "types"
+    "outDir": "lib"
   },
   "include": [
     "src/**/*"

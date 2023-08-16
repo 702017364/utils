@@ -9,6 +9,7 @@ interface Item {
 }
 
 const re_from = /from\s+('|")(\.[^'"]+)\1(?=[;\n\r])/g
+const re_file = /\.d\.ts$/
 
 const test = (): Plugin => ({
   name: 'test-plugin',
@@ -25,6 +26,7 @@ const test = (): Plugin => ({
     const deep = (relative: string) => {
       const path = join(root, relative)
       readdirSync(path).forEach((file) => {
+        if (re_file.test(file)) return
         const src = join(path, file)
         if (statSync(src).isDirectory()) {
           deep(join(relative, file))
