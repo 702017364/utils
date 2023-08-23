@@ -11,7 +11,7 @@ const re_default = /^function\sdefault_\d+\s*\(/
 /**
  * 检测是否为class
  */
-export const isClass = (value: any, strict = true): value is new (...args: any) => any => { 
+const isClass = (value: any, strict = true): value is new (...args: any) => any => { 
   if (typeof value !== 'function') return false
   const proto: Proto | undefined = (<Function>value).prototype
   if (!proto || proto.constructor !== value) return false
@@ -26,3 +26,5 @@ export const isClass = (value: any, strict = true): value is new (...args: any) 
   }
   return false
 }
+
+export default isClass

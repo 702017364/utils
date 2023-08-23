@@ -42,8 +42,9 @@ const test = (): Plugin => ({
 
     for (let i = 0, j = list.length; i < j; i++) {
       const { dir, file } = list[i]
+      const input = join(root, dir, file)
       const result = await rollup({
-        input: join(root, dir, file),
+        input,
         external() {
           return true
         },
@@ -56,6 +57,7 @@ const test = (): Plugin => ({
         dir: join(target, ...dir.split(re_split).slice(1)),
         format: 'module',
       })
+      console.log(`Rollp Compiled ${input}`)
     }
   }
 
