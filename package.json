@@ -21,7 +21,7 @@
     "devs": "rimraf __devs & npx tsc -p ./tsconfig.devs.json",
     "test": "mocha __tests/**/*.js",
     "test:dev": "npm run test:build & npm run test",
-    "test:build": "rimraf __tests & rimraf lib  & node ./__devs/test.cjs",
+    "test:build": "node ./__devs/test.cjs",
     "test:all": "npm run devs & npm run test:build & npm run test",
     "prepublishOnly": "npm run devs & npm run trove & npm run build"
   },
