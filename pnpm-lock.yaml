@@ -8,9 +8,6 @@ dependencies:
   axios:
     specifier: ^1.4.0
     version: 1.4.0
-  lodash-es:
-    specifier: ^4.17.21
-    version: 4.17.21
 
 devDependencies:
   '@babel/core':
@@ -40,9 +37,6 @@ devDependencies:
   '@types/babel__traverse':
     specifier: ^7.20.1
     version: 7.20.1
-  '@types/lodash-es':
-    specifier: ^4.17.8
-    version: 4.17.8
   '@types/mocha':
     specifier: ^10.0.1
     version: 10.0.1
@@ -50,8 +44,8 @@ devDependencies:
     specifier: ^20.4.5
     version: 20.4.5
   '@vope/types':
-    specifier: ^1.0.0
-    version: 1.0.0
+    specifier: ^1.0.2
+    version: 1.0.2
   mocha:
     specifier: ^10.2.0
     version: 10.2.0
@@ -388,16 +382,6 @@ packages:
     resolution: {integrity: sha512-LG4opVs2ANWZ1TJoKc937iMmNstM/d0ae1vNbnBvBhqCSezgVUOzcLCqbI5elV8Vy6WKwKjaqR+zO9VKirBBCA==}
     dev: true
 
-  /@types/lodash-es@4.17.8:
-    resolution: {integrity: sha512-euY3XQcZmIzSy7YH5+Unb3b2X12Wtk54YWINBvvGQ5SmMvwb11JQskGsfkH/5HXK77Kr8GF0wkVDIxzAisWtog==}
-    dependencies:
-      '@types/lodash': 4.14.197
-    dev: true
-
-  /@types/lodash@4.14.197:
-    resolution: {integrity: sha512-BMVOiWs0uNxHVlHBgzTIqJYmj+PgCo4euloGF+5m4okL3rEYzM2EEv78mw8zWSMM57dM7kVIgJ2QDvwHSoCI5g==}
-    dev: true
-
   /@types/mocha@10.0.1:
     resolution: {integrity: sha512-/fvYntiO1GeICvqbQ3doGDIP97vWmvFt83GKguJ6prmQM2iXZfFcq6YE8KteFyRtX2/h5Hf91BYvPodJKFYv5Q==}
     dev: true
@@ -406,8 +390,9 @@ packages:
     resolution: {integrity: sha512-rt40Nk13II9JwQBdeYqmbn2Q6IVTA5uPhvSO+JVqdXw/6/4glI6oR9ezty/A9Hg5u7JH4OmYmuQ+XvjKm0Datg==}
     dev: true
 
-  /@vope/types@1.0.0:
-    resolution: {integrity: sha512-EqOzsPbJpbrmIFpO4Znl6TEKgXgOgHppCKCKTC0f+O0nv+tbGQyQ3aNLltX3L2XOh4l8TCkEkudquy1C+Zd4JA==}
+  /@vope/types@1.0.2:
+    resolution: {integrity: sha512-nu/NbJSIdp+W+SuB2KLg6xzvem97PsLb1aFfydnX/nwhK/TnleNOhP1UCCn9VJPi+VW+6JH5/kVDrGtC6ZsqRQ==}
+    engines: {npm: '>=7.0.0'}
     dev: true
 
   /ansi-colors@4.1.1:
@@ -899,10 +884,6 @@ packages:
     dependencies:
       p-locate: 5.0.0
     dev: true
-
-  /lodash-es@4.17.21:
-    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
-    dev: false
 
   /log-symbols@4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
