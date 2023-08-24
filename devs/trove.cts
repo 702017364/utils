@@ -1,8 +1,8 @@
-import { parse } from '@babel/parser'
+import { parse as Parse } from '@babel/parser'
 import traverse from '@babel/traverse'
 import { isClassDeclaration, isFunctionDeclaration, isIdentifier, isInterfaceDeclaration, isTSTypeAliasDeclaration, isVariableDeclaration } from '@babel/types'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
-import { relative, resolve } from 'path'
+import { join, parse, relative, resolve } from 'path'
 
 interface Item {
   name: string
@@ -12,6 +12,8 @@ interface Item {
 
 (() => { 
   const root = resolve(process.cwd(), 'src')
+
+  const exclude = join(root, 'index.ts')
   
   const re_file = /(?<!\.d)\.ts$/
   const re_name = /^(?!_)/
@@ -35,12 +37,13 @@ interface Item {
     readdirSync(path, { encoding: 'utf-8' }).forEach((file) => { 
       const index = count++
       const src = resolve(path, file)
+      if (src === exclude) return
       if (statSync(src).isDirectory()) {
         hunt(src)
       } else if (re_name.test(file) && re_file.test(file)) { 
         const code = readFileSync(src, { encoding: 'utf-8' })
         if (!code) return
-        const ast = parse(code, {
+        const ast = Parse(code, {
           sourceType: 'module',
           plugins: [
             ['typescript', {}]
@@ -76,7 +79,7 @@ interface Item {
               })
             } else { 
               push(index, src, {
-                name: file,
+                name: parse(file).name,
                 default: true,
               })
             }
