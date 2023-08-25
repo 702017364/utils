@@ -22,7 +22,7 @@ const root = process.cwd()
 
 const CONFIG_FILE = '.config'
 
-const pair = /^(?<key>\w+(?:[/\\]+\w+)*)\s*=\s*(?<value>[^\r\n]*)/mg
+const pair = /^(?<key>\w+(?:[/\\]+[-\w]+)*)\s*=\s*(?<value>[^\r\n]*)/mg
 
 const re_split = /\\+|\/+/g
 
@@ -123,7 +123,7 @@ class Build {
       const target = this.toTarget(src)
       if (!isConfig) {
         list.push({ dir, file })
-      } else if (key in options && time !== options[key]) {
+      } else if (time !== options[key]) {
         list.push({ dir, file })
         if (manage.delete(dir, file) === 0) {
           try {
