@@ -165,7 +165,7 @@ class Build {
           test(),
         ],
       })
-      result.write({
+      await result.write({
         dir: join(root, this.target, ...dir.split(re_split).slice(1)),
         format: 'module',
       })
