@@ -11,23 +11,23 @@ describe('getEncoding()', function () {
     strictEqual(type, encoding)
   }
 
-  it('gbk', function () { 
+  it('With gbk', function () { 
     equal('gbk')
   })
 
-  it('utf-16le', function () { 
+  it('With utf-16le', function () { 
     equal('utf-16le', true)
   })
 
-  it('utf-16be', function () { 
+  it('With utf-16be', function () { 
     equal('utf-16be', true)
   })
 
-  it('utf-8', function () { 
+  it('With utf-8', function () { 
     equal('utf-8')
   })
 
-  it('utf-8 bom', function () { 
+  it('With utf-8 bom', function () { 
     equal('utf-8', true)
   })
 })

@@ -18,7 +18,7 @@ describe('class Union', function () {
     .add({ name: 'age', label: 'age' })
     .value
 
-  it('get label', function () { 
+  it('Get label', function () { 
     strictEqual('id', rules.id.label)
   })
 })
