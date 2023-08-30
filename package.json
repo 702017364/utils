@@ -12,18 +12,15 @@
   "main": "./cjs/index.js",
   "scripts": {
     "build": "npm run cjs | npm run esm | npm run types",
-    "init:build": "npm run devs & npm run trove & npm run test:build",
     "cjs": "rimraf cjs & npx tsc -p ./tsconfig.cjs.json",
     "esm": "rimraf lib & npx tsc -p ./tsconfig.esm.json",
     "types": "rimraf types & npx tsc -p ./tsconfig.types.json & node ./__devs/type.cjs",
     "trove": "node ./__devs/trove.cjs",
     "trove:build": "npm run devs & npm run trove",
     "devs": "rimraf __devs & npx tsc -p ./tsconfig.devs.json",
-    "test": "mocha __tests/**/*.js",
-    "test:dev": "npm run test:build & npm run test",
-    "test:build": "node ./__devs/test.cjs",
-    "test:all": "npm run devs & npm run test:build & npm run test",
-    "prepublishOnly": "npm run devs & npm run trove & npm run build"
+    "test": "node ./__devs/test.cjs & mocha __tests/**/*.js",
+    "test:build": "npm run devs & npm run trove & npm run test",
+    "prepublishOnly": "npm run devs & npm run trove & npm run test & npm run build"
   },
   "exports": {
     ".": {
