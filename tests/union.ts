@@ -1,4 +1,3 @@
-import { Revises } from '@vope/types'
 import { Union } from '@vope/utils'
 import { strictEqual } from 'assert'
 
@@ -8,20 +7,6 @@ describe('class Union', function () {
     age: number
     sex: 0 | 1
   }
-
-  interface Column { 
-    label: string
-    name: string
-  }
-  
-  it('Get label', function () { 
-    const rules = new Union<'name', keyof Test, Column>('name')
-      .add({ name: 'id', label: 'id' })
-      .add({ name: 'age', label: 'age' })
-      .value
-    
-    strictEqual('id', rules.id.label)
-  })
 
   interface Rule { 
     trigger?: string
@@ -38,34 +23,34 @@ describe('class Union', function () {
     rules: Rule | Rule[]
   }
 
-  type IRule = Revises<Omit<VRule, 'trigger' | 'behavior'>, {
-    rules: Rule[]
-  }>
+  type IData = Pick<VRule, 'label' | 'prop' | 'placeholder'>
 
-  class Rules<K extends string> extends Union<'prop', K, VRule, IRule> { 
-    constructor() { 
-      super('prop', ({ label, prop, trigger, placeholder, behavior, rules }) => ({
-        label,
-        prop,
-        get placeholder() {
-          return placeholder || (
-            behavior
-              ? behavior + (label || '')
-              : label
-          )
-        },
-        rules: (Array.isArray(rules) ? rules : [rules]).map((rule) => { 
-          rule.trigger || trigger && (rule.trigger = trigger)
-          return rule
-        }),
-      }))
-    }
-  }
-
-  const { id } = new Rules<keyof Test>()
+  const union = new Union<'prop', keyof Test, VRule, IData, Rule[]>('prop', (data) => ({
+    data: {
+      label: data.label,
+      prop: data.prop,
+      placeholder: data.placeholder,
+    },
+    option: Array.isArray(data.rules) ? data.rules: [data.rules],
+  }))
     .add({
+      label: 'id',
       prop: 'id',
       rules: [],
     })
-    .value
+    .add({
+      label: 'sex',
+      prop: 'sex',
+      rules: [],
+    })
+  
+  const { data, options } = union
+  data.id.label
+  data.sex.label
+  
+  const age: Exclude<keyof Test, keyof typeof options> = 'age'
+
+  it('Label', function () { 
+    strictEqual('id', union.data.id.label)
+  })
 })
