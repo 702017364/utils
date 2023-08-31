@@ -1,12 +1,12 @@
 const utf8_first_prefix = /^1{2,}/g
 const utf8_other_prefix = /^10/
 
-enum Encodes { 
-  UTF_8 = 'utf-8',
-  UTF_16LE = 'utf-16le',
-  UTF_16BE = 'utf-16be',
-  GBK = 'gbk'
-}
+const Encodes = { 
+  UTF_8: 'utf-8',
+  UTF_16LE: 'utf-16le',
+  UTF_16BE: 'utf-16be',
+  GBK: 'gbk'
+} as const
 
 const defaults = {
   utf8: [0xef, 0xbb, 0xbf],
@@ -17,13 +17,15 @@ const equal = (uint: Uint8Array, list: number[]) => {
   return !uint.some((value, index) => value !== list[index])
 }
 
+type Encode<T> = Extract<T[keyof T], string> 
+
 /**
  * 根据文件内容判断文件的编码
  * @param uint 文件内容Uint8Array格式
  * @param limit 用于约束GBK和utf_8的判定上限
  */
 const getEncoding = (uint: Uint8Array, limit = 1024) => { 
-  let encoding!: Encodes
+  let encoding!: Encode<typeof Encodes>
   let offset = 0
   if (equal(uint.slice(0, 3), defaults.utf8)) {
     offset = defaults.utf8.length
