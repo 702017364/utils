@@ -86,7 +86,7 @@ export default class MemoryBasic<
    * 检测存储是否包含某种类型
    */
   includes(type: Type) { 
-    return type in this.memorys
+    return this.memorys.has(type)
   }
 
   /**
