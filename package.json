@@ -50,9 +50,6 @@
     "tslib": "^2.6.1",
     "typescript": "^5.1.6"
   },
-  "dependencies": {
-    "axios": "^1.4.0"
-  },
   "files": [
     "cjs",
     "lib",
