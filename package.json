@@ -42,7 +42,6 @@
     "@types/babel__traverse": "^7.20.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.4.5",
-    "@vope/types": "^1.0.2",
     "esbuild": "^0.19.4",
     "iconv-lite": "^0.6.3",
     "mocha": "^10.2.0",
@@ -55,5 +54,8 @@
     "cjs",
     "lib",
     "types"
-  ]
+  ],
+  "dependencies": {
+    "@vope/types": "^1.0.2"
+  }
 }
