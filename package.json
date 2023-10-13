@@ -13,7 +13,7 @@
   "scripts": {
     "build": "npm run cjs | npm run esm | npm run types",
     "cjs": "rimraf cjs & npx tsc -p ./tsconfig.cjs.json",
-    "esm": "rimraf lib & npx tsc -p ./tsconfig.esm.json",
+    "esm": "rimraf lib & npx esbuild ./src/**/*.ts --outdir=lib",
     "types": "rimraf types & npx tsc -p ./tsconfig.types.json & node ./__devs/type.cjs",
     "trove": "node ./__devs/trove.cjs",
     "trove:build": "npm run devs & npm run trove",
@@ -43,6 +43,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.4.5",
     "@vope/types": "^1.0.2",
+    "esbuild": "^0.19.4",
     "iconv-lite": "^0.6.3",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
