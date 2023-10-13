@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "",
   "type": "module",
   "publishConfig": {
@@ -12,12 +12,12 @@
   "main": "./cjs/index.js",
   "scripts": {
     "build": "npm run cjs | npm run esm | npm run types",
-    "cjs": "rimraf cjs & npx tsc -p ./tsconfig.cjs.json",
-    "esm": "rimraf lib & npx esbuild ./src/**/*.ts --outdir=lib",
-    "types": "rimraf types & npx tsc -p ./tsconfig.types.json & node ./__devs/type.cjs",
+    "cjs": "rimraf cjs & esbuild ./src/**/*.ts --format=cjs --outdir=cjs",
+    "esm": "rimraf lib & esbuild ./src/**/*.ts --outdir=lib",
+    "types": "rimraf types & tsc -p ./tsconfig.types.json & node ./__devs/type.cjs",
     "trove": "node ./__devs/trove.cjs",
     "trove:build": "npm run devs & npm run trove",
-    "devs": "rimraf __devs & npx tsc -p ./tsconfig.devs.json",
+    "devs": "rimraf __devs & tsc -p ./tsconfig.devs.json",
     "test": "node ./__devs/test.cjs & mocha __tests/**/*.js",
     "test:build": "npm run devs & npm run trove & npm run test",
     "prepublishOnly": "npm run devs & npm run trove & npm run test & npm run build"
