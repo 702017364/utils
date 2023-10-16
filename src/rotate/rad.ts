@@ -6,7 +6,7 @@ export type _Point = [number, number]
  * @param rad 旋转弧度
  * @param visit 旋转原点
  */
-const rotateRad = (from: _Point, rad: number, visit: _Point = [0, 0]): [number, number] => { 
+const rotateRad = (from: _Point, rad: number, visit: _Point = [0, 0]): _Point => { 
   const x = from[0] - visit[0]
   const y = from[1] - visit[1]
   return [
