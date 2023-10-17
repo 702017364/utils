@@ -20,4 +20,8 @@ describe('classnames()', function () {
       c: false
     }))
   })
+
+  it('With includes boolean', function () { 
+    strictEqual('a', classnames('a', true))
+  })
 })
