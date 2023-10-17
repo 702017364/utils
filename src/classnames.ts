@@ -1,4 +1,6 @@
-type Base = string | undefined | null
+import { isBoolean, isString } from 'lodash-es'
+
+type Base = string | boolean | undefined | null
 
 type Item = Base | Base[] | Record<string, boolean>
 
@@ -11,11 +13,13 @@ const add = (a: string, b: string) =>
  * 拼接多个class
  */
 export default (...list: Item[]) => list.reduce<string>((caches, data) => { 
-  if (typeof data === 'string') {
+  if (isString(data)) {
     data && (caches = add(caches, data))
   } else if (Array.isArray(data)) {
-    data.forEach((value) => value && (caches = add(caches, value)))
-  } else if (data) { 
+    data.forEach((value) => value
+      && isString(value)
+      && (caches = add(caches, value)))
+  } else if (!isBoolean(data)) { 
     for (const key in data) { 
       key && data[key] && (caches = add(caches, key))
     }
