@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "",
   "type": "module",
   "publishConfig": {
@@ -11,16 +11,13 @@
   "module": "./lib/index.js",
   "main": "./cjs/index.js",
   "scripts": {
-    "build": "npm run cjs | npm run esm | npm run types",
-    "cjs": "rimraf cjs & esbuild ./src/**/*.ts --format=cjs --outdir=cjs",
-    "esm": "rimraf lib & esbuild ./src/**/*.ts --outdir=lib",
-    "types": "rimraf types & tsc -p ./tsconfig.types.json & node ./__devs/type.cjs",
-    "trove": "node ./__devs/trove.cjs",
-    "trove:build": "npm run devs & npm run trove",
-    "devs": "rimraf __devs & tsc -p ./tsconfig.devs.json",
-    "test": "node ./__devs/test.cjs & mocha __tests/**/*.js",
-    "test:build": "npm run devs & npm run trove & npm run test",
-    "prepublishOnly": "npm run devs & npm run trove & npm run test & npm run build"
+    "postinstall": "esbuild ./pre.ts --outfile=pre.cjs --format=cjs & node ./pre.cjs",
+    "prebuild": "npm run postinstall & esbuild ./build.ts --outfile=build.cjs --format=cjs",
+    "build": "node ./build.cjs",
+    "premocha": "node ./build.cjs --type=test",
+    "mocha": "mocha __tests/**/*.js",
+    "test": "npm run mocha",
+    "prepublishOnly": "npm run build & npm run test"
   },
   "exports": {
     ".": {
@@ -30,31 +27,26 @@
   },
   "author": "vope",
   "license": "ISC",
-  "devDependencies": {
-    "@babel/core": "^7.22.9",
-    "@babel/generator": "^7.22.9",
-    "@babel/parser": "^7.22.7",
-    "@babel/traverse": "^7.22.8",
-    "@babel/types": "^7.22.5",
-    "@rollup/plugin-alias": "^5.0.0",
-    "@rollup/plugin-typescript": "^11.1.2",
-    "@types/babel__generator": "^7.6.4",
-    "@types/babel__traverse": "^7.20.1",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^20.4.5",
-    "esbuild": "^0.19.4",
-    "iconv-lite": "^0.6.3",
-    "mocha": "^10.2.0",
-    "rimraf": "^5.0.1",
-    "rollup": "^3.28.1",
-    "tslib": "^2.6.1",
-    "typescript": "^5.1.6"
-  },
   "files": [
     "cjs",
     "lib",
     "types"
   ],
+  "devDependencies": {
+    "@babel/parser": "^7.23.4",
+    "@babel/traverse": "^7.23.4",
+    "@babel/types": "^7.23.4",
+    "@types/babel__traverse": "^7.20.4",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.4.5",
+    "esbuild": "^0.19.4",
+    "glob": "^10.3.10",
+    "iconv-lite": "^0.6.3",
+    "mocha": "^10.2.0",
+    "rimraf": "^5.0.5",
+    "tslib": "^2.6.1",
+    "typescript": "^5.3.2"
+  },
   "dependencies": {
     "@types/lodash-es": "^4.17.9",
     "@vope/types": "^1.0.2",

@@ -10,6 +10,12 @@ interface Item {
   default?: boolean
 }
 
+const ESM = <T extends object>(data: T) => {
+  return 'default' in data
+    ? data.default as T
+    : data
+}
+
 (() => { 
   const root = resolve(process.cwd(), 'src')
 
@@ -49,7 +55,7 @@ interface Item {
             ['typescript', {}]
           ],
         })
-        traverse(ast, {
+        ESM(traverse)(ast, {
           ExportNamedDeclaration({ node: { declaration } }) { 
             if (!declaration) return
             if (isVariableDeclaration(declaration)) {
