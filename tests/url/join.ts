@@ -1,7 +1,7 @@
 import { joinPaths } from '@vope/utils'
 import { strictEqual } from 'assert'
 
-describe('joinURLs()', () => { 
+describe('joinPaths()', () => { 
   it('Empty params', () => { 
     strictEqual('', joinPaths())
   })
@@ -19,7 +19,7 @@ describe('joinURLs()', () => {
   })
 
   it('With /', function () { 
-    strictEqual('abc/e/f/', joinPaths('abc/', 'e/', 'f/'))
+    strictEqual('/abc/a/b/c', joinPaths('/abc/', '/a', '/b/', 'c'))
   })
   
   it('With http://', function () { 

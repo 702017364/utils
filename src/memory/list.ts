@@ -1,10 +1,10 @@
-import MemoryBasic from './basic'
+import { MemoryBasic } from './basic'
 import { Memory } from './type'
 
 /**
  * 分类存储(基于普通的键值存储)
  */
-export default class MemoryList<
+export class MemoryList<
   V,
   Type extends Memory.Type = Memory.Type
 > extends MemoryBasic<V, number[], Type> {

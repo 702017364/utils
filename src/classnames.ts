@@ -12,7 +12,7 @@ const add = (a: string, b: string) =>
 /**
  * 拼接多个class
  */
-export default (...list: Item[]) => list.reduce<string>((caches, data) => { 
+export const classnames = (...list: Item[]) => list.reduce<string>((caches, data) => { 
   if (isString(data)) {
     data && (caches = add(caches, data))
   } else if (Array.isArray(data)) {

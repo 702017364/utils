@@ -11,7 +11,7 @@ type Sort = 'asc' | 'desc'
  * @param sort 排序方式(默认降序)
  * @description sum > 2**53则会因为精度问题计算报错
  */
-const deconPowersSum = (sum: number, sort?: Sort) => { 
+export const deconPowersSum = (sum: number, sort?: Sort) => { 
   if (sum < 1) {
     throw new Error(ERROR_MESSAGE.MIN)
   } else if (sum !== Math.floor(sum)) { 
@@ -28,5 +28,3 @@ const deconPowersSum = (sum: number, sort?: Sort) => {
     ? list.reverse()
     : list
 }
-
-export default deconPowersSum

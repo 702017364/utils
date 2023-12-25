@@ -9,7 +9,7 @@ type Params = Param | Param[]
  * @param isOpenType 是否开启类型处理
  * @description 开始类型处理的情况下，undefined会被转成null
  */
-const connectURLParams = (url: string, params?: Record<string, Params>, isOpenType?: boolean) => { 
+export const connectURLParams = (url: string, params?: Record<string, Params>, isOpenType?: boolean) => { 
   if (!params) return url
   const list: string[] = []
   for (const key in params) { 
@@ -36,5 +36,3 @@ const connectURLParams = (url: string, params?: Record<string, Params>, isOpenTy
     ? url + '&' + caches
     : url + '?' + caches
 }
-
-export default connectURLParams

@@ -9,12 +9,10 @@
  *    'key'
  *  ).a.value // 1
  */
-const hash8json = <
+export const hash8json = <
   K extends string | symbol,
   T extends Record<K, string | number>
 >(list: T[], key: K) => list.reduce((caches, data) => {
   caches[data[key]] = data
   return caches
 }, {} as Record<T[K], T>)
-
-export default hash8json

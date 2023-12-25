@@ -8,7 +8,7 @@ interface Result<Data, Option> {
 /**
  * 数据联合(用于需要对加入的数据进行智能提示)
  */
-export default class Union<
+export class Union<
   Primary extends string,
   Member extends string,
   Origin extends { [key in Primary]: string },

@@ -1,7 +1,7 @@
 /**
  * 获取中间数
  */
-export default (value: number, min: number, max: number) => { 
+export const clamp = (value: number, min: number, max: number) => { 
   if (min > max) { 
     // js位运算的范围为(-2^32,2^32)，超出会产生溢出
     const swap = max

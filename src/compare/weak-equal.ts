@@ -1,7 +1,7 @@
 /**
  * 深度相等性比较(弱比较)
  */
-const deepWeakEqual = (from: any, to: any) => {
+export const deepWeakEqual = (from: any, to: any) => {
   if (typeof from !== 'object'
     || from === null
     || typeof to !== 'object'
@@ -32,5 +32,3 @@ const deepWeakEqual = (from: any, to: any) => {
   }
   return true
 }
-
-export default deepWeakEqual

@@ -1,4 +1,4 @@
-import hash8strings from '../convert/strings'
+import { hash8strings } from '../convert/strings'
 import { Memory } from './type'
 
 interface Config<Reactor> {
@@ -18,7 +18,7 @@ interface Config<Reactor> {
 /**
  * 分类存储(通过继承，可用于拓展存储方式)
  */
-export default class MemoryBasic<
+export class MemoryBasic<
   V,
   Reactor,
   Type extends Memory.Type

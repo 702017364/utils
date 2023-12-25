@@ -1,7 +1,7 @@
 /**
  * 用一维的方式存储二维表
  */
-export default class FlexTable<T> { 
+export class FlexTable<T> { 
   #data: T[][] = []
 
   /**

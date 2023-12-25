@@ -1,6 +1,6 @@
 import { parse as Parse } from '@babel/parser'
 import traverse from '@babel/traverse'
-import { isClassDeclaration, isFunctionDeclaration, isIdentifier, isInterfaceDeclaration, isTSTypeAliasDeclaration, isVariableDeclaration } from '@babel/types'
+import { isClassDeclaration, isFunctionDeclaration, isIdentifier, isTSInterfaceDeclaration, isTSTypeAliasDeclaration, isVariableDeclaration } from '@babel/types'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
 import { join, parse, relative, resolve } from 'path'
 
@@ -65,7 +65,7 @@ const ESM = <T extends object>(data: T) => {
               }
             } else if (isFunctionDeclaration(declaration) || isClassDeclaration(declaration)) {
               push(index, src, { name: declaration.id!.name })
-            } else if (isTSTypeAliasDeclaration(declaration) || isInterfaceDeclaration(declaration)) {
+            } else if (isTSTypeAliasDeclaration(declaration) || isTSInterfaceDeclaration(declaration)) {
               push(index, src, {
                 name: declaration.id.name,
                 isTS: true,
@@ -101,7 +101,9 @@ const ESM = <T extends object>(data: T) => {
     const groups = items.reduce((caches, data) => { 
       const name = data.default
         ? `default as ${data.name}`
-        : data.name
+        : data.isTS
+          ? 'type\u0020' + data.name
+          : data.name
       return caches
         ? caches + ',\u0020' + name
         : name
