@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "",
   "type": "module",
   "publishConfig": {
@@ -8,6 +8,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "types": "./types/index.d.ts",
+  "typings": "./types/index.d.ts",
   "module": "./lib/index.js",
   "main": "./cjs/index.js",
   "scripts": {
