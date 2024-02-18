@@ -126,9 +126,9 @@ export class MemoryBasic<
     })) return this
     for (const [type, target] of memorys) { 
       const memory = this.#reflex(target)
-      memory.forEach((value, index) => { 
+      memory.forEach((value, i) => { 
         if (value >= index) { 
-          memory[index] = value - 1
+          memory[i] = value - 1
         }
       })
       if (memory !== target) {

@@ -38,6 +38,12 @@ memorys.forEach((Memory) => {
       type: 1
     }
 
+    const last: Item = {
+      id: '4',
+      label: '4',
+      type: 4
+    }
+
     it('push()', function () {
       memory
         .push(first)
@@ -53,13 +59,7 @@ memorys.forEach((Memory) => {
             type: 2
           }
         )
-        .push(
-          {
-            id: '4',
-            label: '4',
-            type: 4
-          },
-        )
+        .push(last)
 
       strictEqual(4, memory.size)
     })
@@ -82,12 +82,13 @@ memorys.forEach((Memory) => {
 
     it('delete()', function () {
       memory.delete(first)
-      strictEqual('2,3,4', logMemorys())
+      memory.delete(last)
+      strictEqual('2,3', logMemorys())
     })
 
     it('deleteType()', function () {
       memory.deleteType(2)
-      strictEqual('4', logMemorys())
+      strictEqual('', logMemorys())
     })
   })
 })
