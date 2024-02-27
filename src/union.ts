@@ -5,6 +5,14 @@ interface Result<Data, Option> {
   option: Option
 }
 
+type Raws<Primary extends string, Status extends string, Origin extends { [key in Primary]: string }> = {
+  [P in Status]: Revise<Origin, Primary, P>
+}
+
+type GetStatus<T> = T extends Union<any, any, any, any, any, infer S>
+  ? S
+  : never
+
 /**
  * 数据联合(用于需要对加入的数据进行智能提示)
  */
@@ -18,6 +26,7 @@ export class Union<
 > { 
   #data = <Record<string, Data>>{}
   #options = <Record<string, Option>>{}
+  #raws = <Raws<Primary, Status, Origin>>{}
 
   get data() { 
     return <Required<Record<Status, Data>>>this.#data
@@ -27,14 +36,41 @@ export class Union<
     return <Required<Record<Status, Option>>>this.#options
   }
 
-  constructor(private key: Primary, private formatter: (data: Origin) => Result<Data, Option>) { }
+  constructor(protected key: Primary, private formatter: (data: Origin) => Result<Data, Option>) { }
 
-  add<V extends Exclude<Member, Status>>(data: Revise<Origin, Primary, V>) { 
+  add<P extends Exclude<Member, Status>>(data: Revise<Origin, Primary, P>) { 
     const key = data[this.key]
-    const result = this.formatter(data as Origin)
+    const result = this.formatter(data as Origin);
+    (<Record<string, {}>>this.#raws)[key] = data
     this.#data[key] = result.data
     this.#options[key] = result.option
-    type Super = Union<Primary, Member, Origin, Data, Option, Status | V>
+    type Super = Union<Primary, Member, Origin, Data, Option, Status | P>
+    return <Super & Omit<this, keyof Super>>this
+  }
+
+  /**
+   * 获取原始数据
+   */
+  getRaw<P extends Status>(key: P) { 
+    return this.#raws[key]
+  }
+
+  /**
+   * 从已有的联合中拷贝数据
+   */
+  clone<T extends Union<Primary, string, Origin, Data, Option>, P extends GetStatus<T> & Member>(union: T, key: P | P[]) { 
+    const { data, options } = union
+    const keys = Array.isArray(key)
+      ? key
+      : [key]
+    keys.forEach((key) => {
+      if (key in data) {
+        this.#raws[key] = union.getRaw(key)
+        this.#data[key] = data[key]
+        this.#options[key] = options[key]
+      }
+    })
+    type Super = Union<Primary, Member, Origin, Data, Option, Status | P>
     return <Super & Omit<this, keyof Super>>this
   }
 }
