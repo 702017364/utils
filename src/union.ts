@@ -58,14 +58,14 @@ export class Union<
   /**
    * 从已有的联合中拷贝数据
    */
-  clone<T extends Union<Primary, string, Origin, Data, Option>, P extends GetStatus<T> & Member>(union: T, key: P | P[]) { 
-    const { data, options } = union
+  clone<T extends Union<Primary, string, Origin, Data, Option>, const P extends Exclude<GetStatus<T> & Member, Status>>(target: T, key: P | P[]) { 
+    const { data, options } = target
     const keys = Array.isArray(key)
       ? key
       : [key]
     keys.forEach((key) => {
       if (key in data) {
-        this.#raws[key] = union.getRaw(key)
+        this.#raws[key] = target.getRaw(key)
         this.#data[key] = data[key]
         this.#options[key] = options[key]
       }

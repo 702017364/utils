@@ -54,12 +54,18 @@ describe('class Union', function () {
       rules: [],
     })
     .add({
+      label: 'address3',
+      prop: 'address3',
+      rules: [],
+    })
+    .add({
       label: 'test',
       prop: 'test',
       rules: [],
     })
 
   const union = new Union<'prop', keyof Test, VRule, IData, Rule[]>('prop', formatter)
+    .clone(target, ['address1'])
     .add({
       label: 'id',
       prop: 'id',
@@ -70,7 +76,12 @@ describe('class Union', function () {
       prop: 'sex',
       rules: [],
     })
-    .clone(target, ['address1', 'address2'])
+    .add({
+      label: 'address3',
+      prop: 'address3',
+      rules: [],
+    })
+    .clone(target, ['address2'])
   
   const { data, options } = union
 
