@@ -65,6 +65,7 @@ describe('class Union', function () {
     })
 
   const union = new Union<'prop', keyof Test, VRule, IData, Rule[]>('prop', formatter)
+    // 前拷贝
     .clone(target, ['address1'])
     .add({
       label: 'id',
@@ -81,10 +82,12 @@ describe('class Union', function () {
       prop: 'address3',
       rules: [],
     })
+    // 后拷贝
     .clone(target, ['address2'])
   
   const { data, options } = union
 
+  // 是否正确识别字段
   data.id.label
   data.sex.label
   data.address1.label
