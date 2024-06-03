@@ -80,4 +80,22 @@ describe('Subscriber', function () {
     
     strictEqual(str, '姓名：张三,年龄：20岁,性别：男,|,姓名：李四,性别：女')
   })
+
+  it('once', function () { 
+    const subscriber = new Subscriber<{
+      test(): void
+    }>()
+
+    const list: number[] = []
+    subscriber.$on('test', () => list.push(1))
+    subscriber.$once('test', () => list.push(2))
+    subscriber.$once('test', () => list.push(3))
+    subscriber.$on('test', () => list.push(4))
+    subscriber.$emit('test')
+    subscriber.$emit('test')
+    subscriber.$once('test', () => list.push(5))
+    subscriber.$emit('test')
+    subscriber.$emit('test')
+    strictEqual(list.join(''), '12341414514')
+  })
 })
