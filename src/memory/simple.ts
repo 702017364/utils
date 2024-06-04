@@ -1,5 +1,5 @@
 import { Assign } from '@vope/types'
-import { MemoryBasic, _LV } from './basic'
+import { MemoryBasic } from './basic'
 import { Memory } from './type'
 
 type Transform<T, V> = {
@@ -39,14 +39,10 @@ export class MemorySimple<T, Type extends Memory.Type> implements Basic<T, numbe
     return typeof key === 'function' ? key(data) : data[key] as Type
   }
 
-  push(...list: _LV<T>) { 
+  push(...list: T[]) { 
     const memory = this.#memory
     list.forEach((data) => { 
-      if (Array.isArray(data)) {
-        this.push(...data)
-      } else if(!memory.includes(this.#getType(data))) { 
-        memory.push(data)
-      }
+      memory.includes(this.#getType(data)) || memory.push(data)
     })
     return this
   }

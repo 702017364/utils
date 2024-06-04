@@ -15,8 +15,6 @@ interface Config<Reactor> {
   reflex(reactor: Reactor): number[]
 }
 
-export type _LV<T> = (T | _LV<T>)[]
-
 /**
  * 分类存储(通过继承，可用于拓展存储方式)
  */
@@ -52,18 +50,14 @@ export class MemoryBasic<
     return typeof key === 'function' ? key(data) : data[key] as Type
   }
 
-  push(...list: _LV<T>) { 
+  push(...list: T[]) { 
     const { memorys } = this
-    list.forEach((data) => { 
-      if (Array.isArray(data)) {
-        this.push(...data)
-      } else { 
-        const type = this.getType(data)
-        const memory = memorys.get(type)
-        const index = this.list.push(data) - 1
-        const result = this.#mount(index, memory)
-        memory === result || memorys.set(type, result)
-      }
+    list.forEach((data) => {
+      const type = this.getType(data)
+      const memory = memorys.get(type)
+      const index = this.list.push(data) - 1
+      const result = this.#mount(index, memory)
+      memory === result || memorys.set(type, result)
     })
     return this
   }
