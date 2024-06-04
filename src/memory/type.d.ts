@@ -1,7 +1,7 @@
 import { GetGivenProps } from '@vope/types'
 
 export namespace Memory { 
-  type Type = string | number
+  type Type = string | number | symbol
 
   type Pitch<Data, Type> = (
     Data extends object
