@@ -1,10 +1,23 @@
+import { Assign } from '@vope/types'
 import { MemoryBasic, _LV } from './basic'
 import { Memory } from './type'
+
+type Transform<T, V> = {
+  [P in keyof T]: T[P] extends (...args: any) => any
+    ? (...args: Parameters<T[P]>) => ReturnType<T[P]> extends T
+      ? V
+      : ReturnType<T[P]>
+    : T[P]
+}
+
+type Basic<T, V, Type extends Memory.Type> = Assign<Transform<Omit<MemoryBasic<T, V, Type>, 'forType'>, MemorySimple<T, Type>>, {
+  get(type: Type): T | null
+}>
 
 /**
  * 简易存储(不分类)
  */
-export class MemorySimple<T, Type extends Memory.Type> { 
+export class MemorySimple<T, Type extends Memory.Type> implements Basic<T, number, Type> { 
   #memory: MemoryBasic<T, number, Type>
 
   #key: Memory.Pitch<T, Type>
@@ -55,6 +68,17 @@ export class MemorySimple<T, Type extends Memory.Type> {
   forEach(callback: (data: T, index: number) => void) { 
     this.#memory.forEach(callback)
     return this
+  }
+
+  /**
+   * map(按入栈顺序)
+   */
+  map<V>(callback: (data: T, index: number) => V) { 
+    const list: V[] = []
+    this.#memory.forEach((data, index) => { 
+      list.push(callback(data, index))
+    })
+    return list
   }
 
   /**

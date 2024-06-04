@@ -30,4 +30,9 @@ describe('class MemorySimple', function () {
   it('getter() null', function () { 
     strictEqual(null, simple.get(''))
   })
+
+  it('map()', function () { 
+    const list = simple.map((data) => data.id)
+    strictEqual('1234', list.join(''))
+  })
 })

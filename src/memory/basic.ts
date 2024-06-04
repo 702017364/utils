@@ -21,14 +21,14 @@ export type _LV<T> = (T | _LV<T>)[]
  * 分类存储(通过继承，可用于拓展存储方式)
  */
 export class MemoryBasic<
-  V,
+  T,
   Reactor,
   Type extends Memory.Type
 > {
   #mount: Config<Reactor>['mount']
   #reflex: Config<Reactor>['reflex']
   
-  protected list: V[] = []
+  protected list: T[] = []
   protected memorys = new Map<Type, Reactor>()
 
   /**
@@ -42,17 +42,17 @@ export class MemoryBasic<
    * @param key 用于对数据进行分类的key
    * @param config 
    */
-  constructor(protected key: Memory.Pitch<V, Type>, config: Config<Reactor>) { 
+  constructor(protected key: Memory.Pitch<T, Type>, config: Config<Reactor>) { 
     this.#mount = config.mount
     this.#reflex = config.reflex
   }
 
-  protected getType(data: V) {
+  protected getType(data: T) {
     const { key } = this
     return typeof key === 'function' ? key(data) : data[key] as Type
   }
 
-  push(...list: _LV<V>) { 
+  push(...list: _LV<T>) { 
     const { memorys } = this
     list.forEach((data) => { 
       if (Array.isArray(data)) {
@@ -71,7 +71,7 @@ export class MemoryBasic<
   /**
    * 遍历所有存储数据(按入栈顺序)
    */
-  forEach(callback: (data: V, index: number) => void) { 
+  forEach(callback: (data: T, index: number) => void) { 
     this.list.forEach(callback)
     return this
   }
@@ -79,7 +79,7 @@ export class MemoryBasic<
   /**
    * 遍历所有存储类型
    */
-  forType(callback: (data: V[], type: Type) => void) { 
+  forType(callback: (data: T[], type: Type) => void) { 
     const { memorys, list } = this
     for (const [type, memory] of memorys) {
       const caches = this.#reflex(memory).map((index) => list[index])
@@ -108,7 +108,7 @@ export class MemoryBasic<
   /**
    * 删除指定存储数据
    */
-  delete(data: V) { 
+  delete(data: T) { 
     const { memorys, list } = this
     let index = -1
     if (!list.some((value, i) => {
@@ -155,7 +155,7 @@ export class MemoryBasic<
     const { memorys, list } = this
     if (!memorys.has(type)) return this
     const local = hash8strings(this.#reflex(memorys.get(type)!))
-    const Memory = this.constructor as new (key: ConstructorParameters<typeof MemoryBasic<V, Reactor, Type>>[0]) => MemoryBasic<V, Reactor, Type>
+    const Memory = this.constructor as new (key: ConstructorParameters<typeof MemoryBasic<T, Reactor, Type>>[0]) => MemoryBasic<T, Reactor, Type>
     const imitator = new Memory(this.key)
     list.forEach((data, index) => { 
       index in local || imitator.push(data)
