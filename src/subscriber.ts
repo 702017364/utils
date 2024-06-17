@@ -4,10 +4,12 @@ type Listeners<T> = {
   [P in keyof T]: T[P][]
 }
 
+export type SModel = Record<keyof any, (...args: any[]) => void>
+
 /**
  * 订阅
  */
-export default class Subscriber<T extends Record<keyof any, (...args: any[]) => void>> { 
+export default class Subscriber<T extends SModel> { 
   #listeners = {} as Listeners<T>
 
   #once = {} as Record<keyof T, number[]>

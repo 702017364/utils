@@ -149,8 +149,11 @@ export class MemoryBasic<
     const { memorys, list } = this
     if (!memorys.has(type)) return this
     const local = hash8strings(this.#reflex(memorys.get(type)!))
-    const Memory = this.constructor as new (key: ConstructorParameters<typeof MemoryBasic<T, Reactor, Type>>[0]) => MemoryBasic<T, Reactor, Type>
-    const imitator = new Memory(this.key)
+    const Memory = this.constructor as new (...args: ConstructorParameters<typeof MemoryBasic<T, Reactor, Type>>) => MemoryBasic<T, Reactor, Type>
+    const imitator = new Memory(this.key, {
+      mount: this.#mount,
+      reflex: this.#reflex,
+    })
     list.forEach((data, index) => { 
       index in local || imitator.push(data)
     })
