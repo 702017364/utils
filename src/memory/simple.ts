@@ -67,14 +67,24 @@ export class MemorySimple<T, Type extends Memory.Type> implements Basic<T, numbe
   }
 
   /**
+   * some(按入栈顺序)
+   */
+  some(callback: (data: T, index: number) => boolean) { 
+    return this.#memory.some(callback)
+  }
+
+  /**
    * map(按入栈顺序)
    */
   map<V>(callback: (data: T, index: number) => V) { 
-    const list: V[] = []
-    this.#memory.forEach((data, index) => { 
-      list.push(callback(data, index))
-    })
-    return list
+    return this.#memory.map(callback)
+  }
+
+  /**
+   * reduce(按入栈顺序)
+   */
+  reduce<V>(callback: (previousValue: V, currentValue: T, currentIndex: number) => V, initialValue: V) { 
+    return this.#memory.reduce(callback, initialValue)
   }
 
   /**

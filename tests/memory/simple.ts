@@ -33,4 +33,21 @@ describe('class MemorySimple', function () {
     const list = simple.map((data) => data.id)
     strictEqual('1234', list.join(''))
   })
+
+  it('some() => true', function () { 
+    const value = simple.some((data) => data.id === '2')
+    strictEqual(true, value)
+  })
+
+  it('some() => false', function () { 
+    const value = simple.some((data) => data.id === '200')
+    strictEqual(false, value)
+  })
+
+  it('reduce()', function () { 
+    const value = simple.reduce((caches, data) => { 
+      return caches + data.id
+    }, '')
+    strictEqual('1234', value)
+  })
 })

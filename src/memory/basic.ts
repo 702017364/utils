@@ -83,6 +83,27 @@ export class MemoryBasic<
   }
 
   /**
+   * some(按入栈顺序)
+   */
+  some(callback: (data: T, index: number) => boolean) { 
+    return this.list.some(callback)
+  }
+
+  /**
+   * map(按入栈顺序)
+   */
+  map<V>(callback: (data: T, index: number) => V) { 
+    return this.list.map(callback)
+  }
+
+  /**
+   * reduce(按入栈顺序)
+   */
+  reduce<V>(callback: (previousValue: V, currentValue: T, currentIndex: number) => V, initialValue: V) { 
+    return this.list.reduce(callback, initialValue)
+  }
+
+  /**
    * 检测存储是否包含某种类型
    */
   includes(type: Type) { 
