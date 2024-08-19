@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.4.19",
+  "version": "1.4.20",
   "description": "",
   "type": "module",
   "publishConfig": {
@@ -49,6 +49,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@type-challenges/utils": "^0.1.1",
     "@types/lodash-es": "^4.17.9",
     "@vope/types": "^1.0.12",
     "csstype": "^3.1.3",
