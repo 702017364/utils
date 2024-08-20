@@ -6,11 +6,26 @@ import { MemorySimple } from './memory/simple'
 import { Memory } from './memory/type'
 
 interface Config<INode extends object, IEdge extends object> { 
-  nid: GetGivenProps<INode, string> & string
-  eid: GetGivenProps<IEdge, string> & string
-  sourceKey: GetGivenProps<IEdge, string> & string
-  targetKey: GetGivenProps<IEdge, string> & string
-  dir(edge: IEdge): string
+  /**
+   * 点主键字段
+   */
+  nid: Extract<GetGivenProps<INode, string>, string>
+  /**
+   * 边主键字段
+   */
+  eid: Extract<GetGivenProps<IEdge, string>, string>
+  /**
+   * (边)出点字段
+   */
+  sourceKey: Extract<GetGivenProps<IEdge, string>, string>
+  /**
+   * (边)入点字段
+   */
+  targetKey: Extract<GetGivenProps<IEdge, string>, string>
+  /**
+   * (边)方向键
+   */
+  dir?(edge: IEdge): string
 }
 
 type Type = 'add' | 'delete'
@@ -19,15 +34,37 @@ type Type = 'add' | 'delete'
  * 图管理
  */
 export default class Neo4j<INode extends object, IEdge extends object> { 
-  #nid: GetGivenProps<INode, string> & string
-  #sourceKey: GetGivenProps<IEdge, string> & string
-  #targetKey: GetGivenProps<IEdge, string> & string
+  #nPrimaryKey: keyof INode
+  #ePrimaryKey: keyof IEdge
+  #sourceKey: keyof IEdge
+  #targetKey: keyof IEdge
+  #dirKey: (edge: IEdge) => string
 
   #nodes: MemorySimple<INode, string>
   #edges: MemorySimple<IEdge, string>
   #sources: MemoryList<IEdge, string>
   #targets: MemoryList<IEdge, string>
   #dirs: MemoryList<IEdge, string>
+
+  get nodeField() { 
+    return this.#nPrimaryKey
+  }
+
+  get edgeField() { 
+    return this.#ePrimaryKey
+  }
+
+  get sourceField() { 
+    return this.#sourceKey
+  }
+
+  get targetField() { 
+    return this.#targetKey
+  }
+
+  get dirKey() { 
+    return this.#dirKey
+  }
 
   /**
    * 点视图
@@ -59,13 +96,13 @@ export default class Neo4j<INode extends object, IEdge extends object> {
     eid,
     sourceKey,
     targetKey,
-    dir,
+    dir = (edge) => edge[sourceKey] + '|' + edge[targetKey],
   }: Config<INode, IEdge>) { 
-    shield(this, 'nodes', this.#nodes = new MemorySimple<INode, string>(<Memory.Pitch<INode, string>>(this.#nid = nid)))
-    shield(this, 'edges', this.#edges = new MemorySimple<IEdge, string>(<Memory.Pitch<IEdge, string>>eid))
-    shield(this, 'sources', this.#sources = new MemoryList<IEdge, string>(<Memory.Pitch<IEdge, string>>(this.#sourceKey = sourceKey)))
-    shield(this, 'targets', this.#targets = new MemoryList<IEdge, string>(<Memory.Pitch<IEdge, string>>(this.#targetKey = targetKey)))
-    shield(this, 'dirs', this.#dirs = new MemoryList<IEdge, string>(dir))
+    shield(this, 'nodes', this.#nodes = new MemorySimple<INode, string>(<Memory.Pitch<INode, string>><unknown>(this.#nPrimaryKey = nid)))
+    shield(this, 'edges', this.#edges = new MemorySimple<IEdge, string>(<Memory.Pitch<IEdge, string>><unknown>(this.#ePrimaryKey = eid)))
+    shield(this, 'sources', this.#sources = new MemoryList<IEdge, string>(<Memory.Pitch<IEdge, string>><unknown>(this.#sourceKey = sourceKey)))
+    shield(this, 'targets', this.#targets = new MemoryList<IEdge, string>(<Memory.Pitch<IEdge, string>><unknown>(this.#targetKey = targetKey)))
+    shield(this, 'dirs', this.#dirs = new MemoryList<IEdge, string>(this.#dirKey = dir))
 
     nodeList.forEach((node) => this.node('add', node))
     edgeList.forEach((edge) => this.edge('add', edge))
@@ -84,7 +121,7 @@ export default class Neo4j<INode extends object, IEdge extends object> {
       const node = nodes.get(<string>value)
       if (!node) return []
       nodes.delete(node)
-      const id = node[this.#nid] as string
+      const id = node[this.#nPrimaryKey] as string
       const sourceKey = this.#sourceKey as keyof IEdge
       const targetKey = this.#targetKey as keyof IEdge
       const edges = this.#edges

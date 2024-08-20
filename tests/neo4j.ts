@@ -53,7 +53,6 @@ describe('class Neo4j', function () {
     eid: 'id',
     sourceKey: 'source',
     targetKey: 'target',
-    dir: (edge) => edge.source + '-' + edge.target,
   })
 
   neo4j.nodes.size
