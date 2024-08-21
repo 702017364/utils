@@ -197,7 +197,7 @@ const shield_keys = hash8strings([
 
 type Shield<T> = {
   [P in Exclude<keyof T, keyof typeof shield_keys>]: T[P] extends (...args: infer A) => infer B
-    ? Equal<B ,T> extends true
+    ? Equal<[B], [T]> extends true
       ? (...args: A) => Shield<T>
       : T[P]
     : T[P]
