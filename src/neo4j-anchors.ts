@@ -134,7 +134,8 @@ export default class Neo4jAhchors<INode extends object, IEdge extends object> {
    * 查找边连接点的位置
    */
   findAnchor(id: string) { 
-    const anchor = this.#anchors[id] || {}
+    const anchor = this.#anchors[id]
+    if (!anchor) return null
     return {
       source: anchor.source || 0,
       target: anchor.target || 0,
