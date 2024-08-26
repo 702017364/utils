@@ -1,6 +1,6 @@
 import { parse as Parse } from '@babel/parser'
 import traverse from '@babel/traverse'
-import { isClassDeclaration, isFunctionDeclaration, isIdentifier, isTSInterfaceDeclaration, isTSTypeAliasDeclaration, isVariableDeclaration } from '@babel/types'
+import { isClassDeclaration, isExportSpecifier, isFunctionDeclaration, isIdentifier, isTSInterfaceDeclaration, isTSModuleDeclaration, isTSTypeAliasDeclaration, isVariableDeclaration } from '@babel/types'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
 import { join, parse, relative, resolve } from 'path'
 
@@ -56,19 +56,42 @@ const ESM = <T extends object>(data: T) => {
           ],
         })
         ESM(traverse)(ast, {
-          ExportNamedDeclaration({ node: { declaration } }) { 
-            if (!declaration) return
-            if (isVariableDeclaration(declaration)) {
-              const lval = declaration.declarations[0].id
-              if (isIdentifier(lval)) {
-                push(index, src, { name: lval.name })
+          ExportNamedDeclaration({ node: { declaration, specifiers }, scope: { bindings } }) { 
+            if (declaration) {
+              if (isVariableDeclaration(declaration)) {
+                const lval = declaration.declarations[0].id
+                if (isIdentifier(lval)) {
+                  push(index, src, { name: lval.name })
+                }
+              } else if (isFunctionDeclaration(declaration) || isClassDeclaration(declaration)) {
+                push(index, src, { name: declaration.id!.name })
+              } else if (isTSTypeAliasDeclaration(declaration) || isTSInterfaceDeclaration(declaration)) {
+                push(index, src, {
+                  name: declaration.id.name,
+                  isTS: true,
+                })
+              } else if (isTSModuleDeclaration(declaration)) { 
+                const { id } = declaration
+                if (isIdentifier(id) && id.name in bindings === false) { 
+                  push(index, src, {
+                    name: id.name,
+                    isTS: true,
+                  })
+                }
               }
-            } else if (isFunctionDeclaration(declaration) || isClassDeclaration(declaration)) {
-              push(index, src, { name: declaration.id!.name })
-            } else if (isTSTypeAliasDeclaration(declaration) || isTSInterfaceDeclaration(declaration)) {
-              push(index, src, {
-                name: declaration.id.name,
-                isTS: true,
+            } else { 
+              specifiers.forEach((specifier) => { 
+                if (isExportSpecifier(specifier)) {
+                  const { exported, local } = specifier
+                  if (isIdentifier(exported)) {
+                    const isDef = exported.name === 'default'
+                    push(index, src, {
+                      name: isDef ? parse(file).name : exported.name,
+                      default: isDef,
+                      isTS: specifier.exportKind === 'type' || local.name in bindings === false,
+                    })
+                  }
+                }
               })
             }
           },
