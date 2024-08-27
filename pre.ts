@@ -32,7 +32,18 @@ const ESM = <T extends object>(data: T) => {
     const { name } = data
     if (name.slice(0, 1) === '_') return
     const from = './' + relative(root, path).replace(re_path, '/')
-    const items = (list[index] || (list[index] = [from.slice(0, -3), []]))
+    let items: [string, Item[]]
+    if (list[index]) {
+      items = list[index]
+    } else { 
+      const { ext, name } = parse(from)
+      const end = from.length - (
+        name === 'index'
+          ? name.length + ext.length + 1
+          : ext.length
+      )
+      items = list[index] = [from.slice(0, end), []]
+    }
     if (data.default) { 
       data.name = name.replace(re_horizontal, ($0, $1: string) => $1.toLocaleUpperCase())
     }
