@@ -1,4 +1,4 @@
-import { connectURLParams } from '@vope/utils'
+import { URLParamsValues, connectURLParams } from '@vope/utils'
 import { strictEqual } from 'assert'
 
 describe('connectURLParams()', function () { 
@@ -32,5 +32,37 @@ describe('connectURLParams()', function () {
       b: 2,
       e: ['1', undefined, 1, true]
     }, true))
+  })
+
+  it('serializes', () => { 
+    interface C { 
+      a: number
+      b: string
+    }
+
+    const url = 'http://abc'
+    strictEqual(url + '?a=true&b=1&c=10%2C10', connectURLParams(url, {
+      a: true,
+      b: 1,
+      c: {
+        a: 10,
+        b: '10',
+      },
+    }, {
+      a: Boolean,
+      b: Number,
+      c: {
+        cube(text: string): C { 
+          const [a, b] = text.split(',')
+          return {
+            a: +a,
+            b,
+          }
+        },
+        flat(data: C) { 
+          return data.a + ',' + data.b
+        }
+      },
+    } satisfies URLParamsValues))
   })
 })
