@@ -32,7 +32,7 @@ const formatter = (params: Record<string, Params>, isOpenType?: boolean) => {
  * url拼接参数
  * @param url 
  * @param params 需要让url携带的参数
- * @param serializes 泛型对象(转换套件)，boolean或缺省(是否将undefined会被转成null)
+ * @param serializes 泛型对象(转换套件)，boolean或省缺(是否将undefined会被转成null)
  */
 export function connectURLParams<T extends URLParamsValues>(url: string, params: URLParamsFlats<T>, serializes: T): string
 export function connectURLParams(url: string, params?: Record<string, Params>, serializes?: boolean): string
