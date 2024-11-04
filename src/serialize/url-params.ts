@@ -1,46 +1,80 @@
-import { Assign } from '@vope/types'
-import { isFunction, isObject } from 'lodash-es'
+import { Equal } from '@type-challenges/utils'
+import { UnionToTuple } from '@vope/types'
+import { isString } from 'lodash-es'
+import { isKey } from '../is/key'
 
-type NativeValue = BooleanConstructor | NumberConstructor | DateConstructor | BigIntConstructor | RegExpConstructor | StringConstructor
+type NativeMap = {
+  string: string
+  boolean: boolean
+  number: number
+  bigint: bigint
+  date: Date
+  regexp: RegExp
+  null: null
+}
+
+type NativeValue = keyof NativeMap
+
+type NativeCubes = {
+  [P in NativeValue]: (text: string) => NativeMap[P]
+}
+
+const cubes: NativeCubes = {
+  string: (text) => text,
+  boolean: (text) => text === 'true',
+  number: (text) => Number(text),
+  bigint: (text) => BigInt(text),
+  date: (text) => new Date(text),
+  regexp: (text) => new RegExp(text),
+  null: () => null,
+}
+
+type NativeFlats = {
+  [P in NativeValue]: (data: NativeMap[P]) => string
+}
+
+const flats: NativeFlats = {
+  string: (data) => flatEncode(data),
+  boolean: (data) => `${data}`,
+  number: (data) => `${data}`,
+  bigint: (data) => `${data}`,
+  date: (data) => data.toJSON(),
+  regexp: (data) => flatEncode(data.source),
+  null: () => 'null'
+}
 
 interface AccessorValue<T = any> { 
   cube(text: string): T
-  flat?(value: T): string
+  flat(value: T): string
 }
 
-type SimplifyValue = ((text: string) => any)
+type NativeUnion = UnionToTuple<{
+  [P in NativeValue]: [NativeMap[P], P]
+}[NativeValue]>
 
-type Value = NativeValue | SimplifyValue | AccessorValue
+type Signal<T, U extends any[] = NativeUnion> = U extends [infer A1, ...infer A2]
+  ? A1 extends [infer V, infer K]
+    ? Equal<T, V> extends true
+      ? K
+      : Signal<T, A2>
+    : Signal<T, A2>
+  : never
 
 /**
  * 转换套件类型
  */
-type Values = Record<string, Value>
-
-export {
-  Values as URLParamsValues
+export type Serializes<T extends object> = {
+  [P in keyof T & string]: Signal<T[P]> | AccessorValue<T[P]>
 }
 
-type SimplifyBranch<T, Branch extends boolean> = Branch extends true
-  ? T extends object
-    ? Assign<T, { toString?(this: T): string }>
-    : T
-  : T
+type Cube<T> = [T] extends [NativeValue]
+  ? NativeMap[T]
+  : [T] extends [AccessorValue<infer B>]
+    ? B
+    : never
 
-type Cube<T, Branch extends boolean> = [T] extends [DateConstructor]
-  ? Date
-  : [T] extends [NativeValue]
-    ? T extends ((value: string) => infer A)
-      ? A
-      : string
-    : [T] extends [(text: string) => infer S]
-      ? SimplifyBranch<S, Branch>
-      : [T] extends [AccessorValue<infer B>]
-        ? B
-        : string
-
-type Cubes<T extends Values, Branch extends boolean = false> = {
-  [P in keyof T]: Cube<T[P], Branch>
+type Cubes<T extends object, S extends Serializes<T>> = {
+  [P in Extract<keyof T, keyof S> & string]: Cube<S[P]>
 }
 
 /**
@@ -48,38 +82,19 @@ type Cubes<T extends Values, Branch extends boolean = false> = {
  * @param text URL查询参数字符串
  * @param serializes 转换套件
  */
-export const cubeURLParams = <T extends Values>(text: string, serializes: T) => { 
+export const cubeURLParams = <T extends object, S extends Serializes<T>>(text: string, serializes: S) => { 
   const params = new URLSearchParams(text)
   const result = {} as Record<string, any>
   for (const [key, value] of params) { 
-    const serialize = serializes[key]
-    switch (serialize) { 
-      case Boolean:
-        result[key] = value === 'true'
-        break
-      case Number:
-        result[key] = Number(value)
-        break
-      case Date:
-        result[key] = new Date(value)
-        break
-      case BigInt:
-        result[key] = BigInt(value)
-        break
-      case RegExp:
-        result[key] = new RegExp(value)
-        break
-      default:
-        if (isFunction(serialize)) {
-          result[key] = serialize(value)
-        } else if (isObject(serialize) && isFunction(serialize.cube)) {
-          result[key] = serialize.cube(value)
-        } else { 
-          result[key] = value
-        }
+    const serialize = serializes[<Extract<keyof T, string>>key]
+    if (!serialize) continue
+    if (isString(serialize) && isKey(serialize, cubes)) {
+      result[key] = cubes[serialize](value)
+    } else { 
+      result[key] = (<AccessorValue><unknown>serialize).cube(value)
     }
   }
-  return result as Cubes<T>
+  return <Cubes<T, S>>result
 }
 
 const re_flat = /\+/g
@@ -87,77 +102,23 @@ const re_flat = /\+/g
 const flatEncode = (text: string) =>
   text.replace(re_flat, () => '%2B')
 
-const flatValue = (value: any) => { 
-  switch (typeof value) { 
-    case 'boolean':
-    case 'bigint':
-    case 'number':
-    case 'symbol':
-    case 'function':
-      return (<boolean | bigint | number | symbol | Function>value).toString()
-    case 'string':
-      return flatEncode(value)
-    case 'undefined':
-      return ''
-    default:
-      if (value === null) { 
-        return ''
-      }
-      if (value instanceof Date) {
-        return value.toJSON()
-      } else if (value instanceof RegExp) {
-        return flatEncode(value.source)
-      } else { 
-        return flatEncode((<object>value).toString())
-      }
-  }
-}
-
-/**
- * 符合套件的(复杂)数据类型
- */
-export type URLParamsFlats<T extends Values> = Cubes<T, true>
-
 /**
  * 将(复杂)对象转换成URL查询参数
- * @param data 符合套件格式的(复杂)对象
+ * @param data 数据
  * @param serializes 转换套件
  */
-export const flatURLParams = <T extends Values>(data: URLParamsFlats<T>, serializes: T) => { 
+export const flatURLParams = <T extends object, S extends Serializes<T>>(data: T, serializes: S) => { 
   const params = new URLSearchParams()
   for (const key in data) { 
     const value = data[key]
     const serialize = serializes[key]
-    let result: string
-    switch (serialize) { 
-      case Boolean:
-        result = typeof value === 'boolean' ? `${value}` : ''
-        break
-      case Number:
-        result = typeof value === 'number' ? `${value}` : ''
-        break
-      case Date:
-        result = value instanceof Date ? value.toJSON() : ''
-        break
-      case BigInt:
-        result = typeof value === 'bigint' ? `${value}` : ''
-        break
-      case RegExp:
-        result = value instanceof RegExp ? flatEncode(value.source) : ''
-        break
-      case String:
-        result = typeof value === 'string' ? flatEncode(value) : ''
-        break
-      default:
-        if (isFunction(serialize)) {
-          result = flatValue(value)
-        } else if (isObject(serialize) && isFunction(serialize.flat)) {
-          result = serialize.flat(value)
-        } else { 
-          result = flatValue(value)
-        }
-    }
-    params.append(key, result)
+    if (!serialize) continue
+    params.append(
+      key,
+      isString(serialize) && isKey(serialize, flats)
+        ? flats[serialize](<any>value)
+        : (<AccessorValue><unknown>serialize).flat(value)
+    )
   }
   return params.toString()
 }

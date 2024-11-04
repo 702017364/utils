@@ -1,4 +1,4 @@
-import { URLParamsValues } from '@vope/utils'
+import { Serializes } from '@vope/utils'
 
 export interface F { 
   a: string
@@ -10,18 +10,32 @@ export interface G {
   b: boolean
 }
 
+export interface IParams { 
+  a: boolean
+  b: number
+  c: Date
+  d: bigint
+  e: RegExp
+  f: F
+  g: G
+  h: G
+  i: 1,
+  j: null,
+}
+
 export const serializes = {
-  a: Boolean,
-  b: Number,
-  c: Date,
-  d: BigInt,
-  e: RegExp,
-  f(text: string) { 
-    const f: F = {
-      a: text.slice(0, 1),
-      b: +text.slice(1)
-    }
-    return f
+  a: 'boolean',
+  b: 'number',
+  c: 'date',
+  d: 'bigint',
+  e: 'regexp',
+  f: {
+    cube(text) {
+      return <F>JSON.parse(text)
+    },
+    flat(value: F) {
+      return JSON.stringify(value)
+    },
   },
   g: {
     cube(text: string) { 
@@ -30,7 +44,10 @@ export const serializes = {
         c: +text.slice(0, 2),
       }
       return g
-    }
+    },
+    flat(value: G) { 
+      return `${value.c}${value.b}`
+    },
   },
   h: {
     cube(text: string) { 
@@ -44,7 +61,13 @@ export const serializes = {
       return data.c + data.b.toString()
     },
   },
-  i(text: string) { 
-    return 1 as const
-  }
-} satisfies URLParamsValues
+  i: {
+    cube(text: string) {
+      return 1 as const
+    },
+    flat(value: 1) {
+      return '1'
+    },
+  },
+  j: 'null',
+} satisfies Serializes<IParams>

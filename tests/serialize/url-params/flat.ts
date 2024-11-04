@@ -1,10 +1,10 @@
-import { URLParamsFlats, flatURLParams } from '@vope/utils'
-import { serializes } from './options'
+import { flatURLParams } from '@vope/utils'
 import { strictEqual } from 'assert'
+import { IParams, serializes } from './options'
 
 describe('flatURLParams()', function () { 
   it('default', function () { 
-    const data = {
+    const data: IParams = {
       a: true,
       b: 1,
       c: new Date('2018-05-05T01:01:01.112Z'),
@@ -13,9 +13,6 @@ describe('flatURLParams()', function () {
       f: {
         a: 'a|',
         b: 1,
-        toString() { 
-          return this.a + this.b
-        },
       },
       g: {
         b: true,
@@ -26,7 +23,8 @@ describe('flatURLParams()', function () {
         c: 34,
       },
       i: 1,
-    } satisfies URLParamsFlats<typeof serializes>
+      j: null,
+    }
 
     const actual = flatURLParams(data, serializes)
     const list: [string, string][] = []
@@ -49,16 +47,19 @@ describe('flatURLParams()', function () {
           list.push([key, 'te%26%252Bs+t'])
           break
         case 'f':
-          list.push([key, 'a%7C1'])
+          list.push([key, '%7B%22a%22%3A%22a%7C%22%2C%22b%22%3A1%7D'])
           break
         case 'g':
-          list.push([key, '%5Bobject+Object%5D'])
+          list.push([key, '12true'])
           break
         case 'h':
           list.push([key, '34false'])
           break
         case 'i':
           list.push([key, '1'])
+          break
+        case 'j':
+          list.push([key, 'null'])
           break
       }
     }

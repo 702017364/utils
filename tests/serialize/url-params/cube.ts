@@ -1,11 +1,11 @@
 import { Equal, Expect } from '@type-challenges/utils'
 import { cubeURLParams } from '@vope/utils'
 import { deepStrictEqual } from 'assert'
-import { F, G, serializes } from './options'
+import { F, G, IParams, serializes } from './options'
 
 describe('cubeURLParams()', function () { 
   it('default', function () { 
-    const cube = cubeURLParams('a=true&b=5.3&c=2017-10-10T10:10:10.102z&d=100&e=^test$&f=a12&g=23true&h=45false&i=1', serializes)
+    const cube = cubeURLParams<IParams, typeof serializes>('a=true&b=5.3&c=2017-10-10T10:10:10.102z&d=100&e=^test$&f=%7B%22a%22%3A%22a%22%2C%22b%22%3A12%7D&g=23true&h=45false&i=1&j=null', serializes)
 
     type Cube = typeof cube
 
@@ -19,7 +19,8 @@ describe('cubeURLParams()', function () {
         f: F
         g: G
         h: G
-        i: 1
+        i: 1,
+        j: null,
       }>>,
     ]
 
@@ -42,6 +43,7 @@ describe('cubeURLParams()', function () {
         c: 45,
       },
       i: 1,
+      j: null,
     })
   })
 })
