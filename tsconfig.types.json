@@ -3,7 +3,12 @@
   "compilerOptions": {
     "emitDeclarationOnly": true,
     "declaration": true,
-    "declarationDir": "types"
+    "declarationDir": "types",
+    "paths": {
+      "@package": [
+        "package.json"
+      ]
+    }
   },
   "include": [
     "src/**/*"

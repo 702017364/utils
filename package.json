@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.4.25",
+  "version": "1.4.26",
   "description": "",
   "type": "module",
   "publishConfig": {
@@ -12,13 +12,14 @@
   "module": "./lib/index.js",
   "main": "./cjs/index.js",
   "scripts": {
-    "start": "esbuild ./pre.ts --outfile=pre.cjs --format=cjs & node ./pre.cjs",
-    "prebuild": "npm run start & esbuild ./build.ts --outfile=build.cjs --format=cjs",
-    "build": "node ./build.cjs",
+    "start": "esbuild ./start.ts --outfile=start.cjs --format=cjs & node ./start.cjs",
+    "poststart": "esbuild ./pre.ts --outfile=pre.cjs --format=cjs & node ./pre.cjs",
+    "build": "npm run start & node ./build.cjs",
     "premocha": "node ./build.cjs --type=test",
     "mocha": "mocha __tests/**/*.js",
     "test": "npm run mocha",
-    "prepublishOnly": "npm run build & npm run test"
+    "prepublishOnly": "npm run build & npm run test",
+    "debug": "npm run build & npm run premocha"
   },
   "exports": {
     ".": {
@@ -37,14 +38,22 @@
     "@babel/parser": "^7.23.4",
     "@babel/traverse": "^7.23.4",
     "@babel/types": "^7.23.4",
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.0",
     "@types/babel__traverse": "^7.20.4",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.4.5",
+    "@types/sm-crypto": "^0.3.4",
     "esbuild": "^0.19.4",
     "glob": "^10.3.10",
     "iconv-lite": "^0.6.3",
     "mocha": "^10.2.0",
+    "puppeteer": "^23.4.1",
     "rimraf": "^5.0.5",
+    "rollup": "^4.22.5",
     "tslib": "^2.6.1",
     "typescript": "^5.3.3"
   },
@@ -53,6 +62,8 @@
     "@types/lodash-es": "^4.17.9",
     "@vope/types": "^1.0.13",
     "csstype": "^3.1.3",
-    "lodash-es": "^4.17.21"
+    "localforage": "^1.10.0",
+    "lodash-es": "^4.17.21",
+    "sm-crypto": "^0.3.13"
   }
 }

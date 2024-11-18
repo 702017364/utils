@@ -2,7 +2,18 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@vope/utils": ["src/index.ts"]
+      "@/*": [
+        "src/*"
+      ], 
+      "@vope/utils": [
+        "src/index.ts"
+      ],
+      "@examples/*": [
+        "examples/*"
+      ],
+      "@package": [
+        "package.json"
+      ]
     }
   }
 }

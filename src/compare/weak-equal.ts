@@ -1,12 +1,14 @@
+import { hash8strings } from '../convert/strings'
+
 /**
  * 深度相等性比较(弱比较)
  */
-export const deepWeakEqual = (from: any, to: any) => {
+export const deepWeakEqual = <A, B>(from: A, to: B, exclude?: Extract<keyof A | keyof B, string | number>[]) => {
   if (typeof from !== 'object'
     || from === null
     || typeof to !== 'object'
     || to === null
-  ) return from === to
+  ) return <any>from === to
   if (Array.isArray(from) && Array.isArray(to)) {
     if (from.length !== to.length) return false
     return !from.some((t1, index) => {
@@ -16,16 +18,18 @@ export const deepWeakEqual = (from: any, to: any) => {
     })
   } else {
     const caches: Record<string, string> = {}
+    const excludeCaches = exclude && hash8strings(exclude)
     for (const key in from) {
-      if (!deepWeakEqual(from[key], to[key])) {
+      if (excludeCaches && key in excludeCaches) continue
+      if (!deepWeakEqual(from[key], to[<keyof B><unknown>key])) {
         return false
       } else {
         caches[key] = key
       }
     }
     for (const key in to) {
-      if (key in caches) continue
-      if (!deepWeakEqual(from[key], to[key])) {
+      if ((excludeCaches && key in excludeCaches) || key in caches) continue
+      if (!deepWeakEqual(from[<keyof A><unknown>key], to[key])) {
         return false
       }
     }

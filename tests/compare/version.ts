@@ -1,4 +1,3 @@
-
 import { compareVersion } from '@vope/utils'
 import { strictEqual } from 'assert'
 
