@@ -1,5 +1,5 @@
 import { MemoryBasic } from './basic'
-import { Memory } from './type'
+import { type Memory } from './type'
 
 /**
  * 分类存储(基于普通的键值存储)

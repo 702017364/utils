@@ -7,7 +7,7 @@ import { exec } from 'child_process'
 import { build } from 'esbuild'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from 'fs'
 import { globSync } from 'glob'
-import { join, parse, relative, sep } from 'path'
+import { dirname, join, parse, relative, sep } from 'path'
 import { rimrafSync } from 'rimraf'
 import { Plugin, rollup } from 'rollup'
 import { dependencies, devDependencies, name } from './package.json'
@@ -49,6 +49,10 @@ const getEntries = (root: string) => {
 
 abstract class Environment { 
   protected root = process.cwd()
+  
+  protected define = {
+    'process.env.npm_config_name': `"${name}"`,
+  }
 
   protected getExternals(excludes?: RegExp) { 
     return new Externals(excludes).list
@@ -63,6 +67,30 @@ interface TableItem {
   src: string
   isType?: boolean
   alia?: string 
+}
+
+const re_relation = /import\s*\{([^}]+)\}\s*from\s*(['"])(\.[^'"]*)\2/mg
+
+const re_as = /\s+as\s+/
+
+const re_sep = new RegExp(`\\${sep}+`, 'g')
+
+const re_import = /import\s*\{([^}]+)\}\s*from\s*(['"])(@vope\/utils)\2/
+
+const getFileSrc = (value: string) => { 
+  let file!: string
+  [
+    value + '.ts',
+    value + '.d.ts',
+    value + sep + 'index.ts',
+    value + sep + 'index.d.ts',
+  ].some((src) => { 
+    if (existsSync(src)) { 
+      file = src
+      return true
+    }
+  })
+  return file
 }
 
 class TestEnvironment extends Environment { 
@@ -83,6 +111,8 @@ class TestEnvironment extends Environment {
   private external: string[]
 
   private rollupLoadUtilsPlugin = this.createRollupLoadUtilsPlugin()
+
+  private table = this.getTable()
 
   constructor() { 
     super()
@@ -105,62 +135,112 @@ class TestEnvironment extends Environment {
       const data = parse(relative('tests', file))
       const test = locals[join(data.dir, data.name + '.js')]
       if (!test) return false
-      return statSync(join(root, file)).mtime < statSync(join(root, test)).mtime
+      const buildTime = statSync(join(root, test)).mtime
+      return !this.queryAssociateFiles(join(root, file)).some((file) => statSync(file).mtime >= buildTime)
     })
   }
 
-  private createRollupLoadUtilsPlugin(): Plugin { 
+  private getTable() { 
     const dir = join(this.root, 'src')
     const content = readFileSync(join(dir, 'index.ts'), { encoding: 'utf-8' })
     const re_value = /\{(.+?)\}\s*from\s*(['"])(.+?)\2/
-    const re_as = /\s+as\s+/
-    const table = content.split('\n').reduce<Record<string, TableItem>>((caches, text) => {
+    return content.split('\n').reduce<Record<string, TableItem>>((caches, text) => {
       const matchs = text.match(re_value)
       if (!matchs) return caches
       matchs[1].split(',').forEach((target) => {
         const newTarget = target.trim()
         if (newTarget.slice(0, 5) === 'type ') {
-          caches[newTarget.slice(5)] = {
+          caches[newTarget.slice(5).trimStart()] = {
             src: matchs[3],
-            isType: true
+            isType: true,
           }
         } else if (re_as.test(newTarget)) {
           const [alia, key] = newTarget.split(re_as)
           caches[key] = {
             src: matchs[3],
-            alia
+            alia,
           }
         } else {
           caches[newTarget] = {
-            src: matchs[3]
+            src: matchs[3],
           }
         }
       })
       return caches
     }, {})
-    const re_import = /import\s*\{([^}]+)\}\s*from\s*(['"])(@vope\/utils)\2/g
+  }
+
+  private parse(imports: string, callback: (src: string, values: string[]) => void, supplement?: (key: string, isType: boolean) => void) { 
+    const { table } = this
+    const caches: Record<string, string[]> = {}
+    imports.split(',').forEach((target) => {
+      const newTarget = target.trim()
+      let isType = false
+      let key
+      if (newTarget.slice(0, 5) === 'type ') {
+        key = newTarget.slice(5).trimStart()
+        isType = true
+      } else if (re_as.test(newTarget)) { 
+        [key] = newTarget.split(re_as)
+      } else {
+        key = newTarget
+      }
+      supplement?.(key, isType)
+      const { src } = table[key]
+      const list = caches[src] || (caches[src] = [])
+      list.push(key)
+    })
+    for (const src in caches) {
+      callback(src, caches[src])
+    }
+  }
+
+  private queryAssociateFiles(file: string) { 
+    const { root } = this
+    const code = readFileSync(file, { encoding: 'utf-8' })
+    const matchs = code.match(re_import)
+    if (!matchs) return []
+    const memory = new Set<string>()
+    this.parse(matchs[1], (src) => { 
+      const file = join(root, 'src', src + '.ts')
+      if (memory.has(file)) return
+      memory.add(file)
+      this.deepQueryAssociate(memory, file)
+    })
+    return Array.from(memory)
+  }
+
+  private deepQueryAssociate(memory: Set<string>, file: string) { 
+    const { root, table } = this
+    const code = readFileSync(file, { encoding: 'utf-8' })
+    let exec: RegExpExecArray | null
+    while ((exec = re_relation.exec(code)) !== null) {
+      this.parse(exec[1], (src) => { 
+        const file = getFileSrc(join(root, 'src', src))
+        if (memory.has(file)) return
+        memory.add(file)
+        this.deepQueryAssociate(memory, file)
+      }, (key, isType) => { 
+        if (key in table) return
+        let value = join(dirname(file), exec![3])
+        table[key] = {
+          src: './' + relative(join(root, 'src'), value).replace(re_sep, '/'),
+          isType: isType,
+        }
+      })
+    }
+  }
+
+  private createRollupLoadUtilsPlugin(): Plugin { 
     return {
       name,
-      transform(code, id) {
-        if (!id.includes('tests'))
-          return
-        const newCode = code.replace(re_import, ($0, $1: string, $2: string, $3: string) => {
-          const caches: Record<string, string[]> = {}
-          $1.split(',').forEach((target) => {
-            const newTarget = target.trim()
-            let key
-            if (newTarget.slice(0, 5) === 'type ') {
-              key = newTarget.slice(5)
-            } else {
-              key = newTarget
-            }
-            const { src } = table[key]
-            const list2 = caches[src] || (caches[src] = [])
-            list2.push(key)
-          })
-          const list = []
-          for (const src in caches) {
-            list.push(`import {${caches[src].map((key) => {
+      transform: (code, id) => {
+        if (!id.includes('tests')) return
+        const { table } = this
+        const newCode = code.replace(re_import, ($0, $1: string) => {
+          const list: string[] = []
+          this.parse($1, (src, values) => { 
+            list.push(`import {${values.map((key) => {
               const data = table[key]
               if (data.isType) {
                 return `type ${key}`
@@ -170,7 +250,7 @@ class TestEnvironment extends Environment {
                 return key
               }
             }).join(',')}} from "@${src.slice(1)}"`)
-          }
+          })
           return list.join('\n')
         })
         return newCode
@@ -185,6 +265,7 @@ class TestEnvironment extends Environment {
       outdir: this.examples,
       outbase: 'examples',
       bundle: true,
+      define: this.define,
       platform: 'browser',
       treeShaking: true,
     })
@@ -253,6 +334,7 @@ class ProductionEnvironment extends Environment {
       outbase: 'src',
       format: 'esm',
       outdir: this.esm,
+      define: this.define,
       platform: 'browser',
     })
   }
@@ -263,6 +345,7 @@ class ProductionEnvironment extends Environment {
       format: 'cjs',
       outdir: this.cjs,
       bundle: true,
+      define: this.define,
       external: Array.from(this.getExternals(/^@vope\//)),
       treeShaking: true,
     })

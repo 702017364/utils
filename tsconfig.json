@@ -10,9 +10,6 @@
       ],
       "@examples/*": [
         "examples/*"
-      ],
-      "@package": [
-        "package.json"
       ]
     }
   }

@@ -4,13 +4,10 @@
     "emitDeclarationOnly": true,
     "declaration": true,
     "declarationDir": "types",
-    "paths": {
-      "@package": [
-        "package.json"
-      ]
-    }
+    "paths": {}
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "shims.*.d.ts"
   ]
 }

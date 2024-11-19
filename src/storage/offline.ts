@@ -1,9 +1,10 @@
-import { name } from '@package'
 import localforage from 'localforage'
 import { isString } from 'lodash-es'
 import { SM4Mode_StringOutput, sm4 } from 'sm-crypto'
 
-const PREFIX = name + '_'
+const NAME = process.env.npm_config_name
+
+const PREFIX = NAME + '_'
 
 export interface ICrypto<From, To> { 
   encrypt(plain: From): To | Promise<To>
@@ -31,7 +32,7 @@ const config: SM4Mode_StringOutput = {
   iv,
 }
 
-const HEADER = '.' + sm4.encrypt(name, key, config)
+const HEADER = '.' + sm4.encrypt(NAME, key, config)
 
 interface Head { 
   expire?: number
