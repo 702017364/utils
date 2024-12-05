@@ -12,6 +12,7 @@ type Transform<T, V> = {
 
 type Basic<T, V, Type extends Memory.Type> = Assign<Transform<Omit<MemoryBasic<T, V, Type>, 'forType'>, MemorySimple<T, Type>>, {
   get(type: Type): T | null
+  at(index: number): T | undefined
 }>
 
 /**
@@ -37,6 +38,13 @@ export class MemorySimple<T, Type extends Memory.Type> implements Basic<T, numbe
   #getType(data: T) { 
     const key = this.#key
     return typeof key === 'function' ? key(data) : data[key] as Type
+  }
+
+  /**
+   * 返回位于指定索引处的项
+   */
+  at(index: number) { 
+    return this.#memory.at(index)
   }
 
   push(...list: T[]) { 

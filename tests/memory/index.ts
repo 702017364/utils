@@ -64,6 +64,10 @@ memorys.forEach((Memory) => {
       strictEqual(4, memory.size)
     })
 
+    it('at()', function () { 
+      strictEqual(true, memory.at(0) === first && memory.at(-memory.size) === first && memory.at(2 ^ 9) === void 0)
+    })
+
     it('forType()', function () {
       const list: string[] = []
       memory.forType((data) => {

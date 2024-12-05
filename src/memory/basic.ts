@@ -63,6 +63,17 @@ export class MemoryBasic<
   }
 
   /**
+   * 返回位于指定索引处的项
+   */
+  at(index: number) { 
+    const { list } = this
+    if (index < 0) { 
+      index += list.length
+    }
+    return this.list.at(index)
+  }
+
+  /**
    * 遍历所有存储数据(按入栈顺序)
    */
   forEach(callback: (data: T, index: number) => void) { 

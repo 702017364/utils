@@ -15,17 +15,21 @@ describe('class MemorySimple', function () {
     { id: '3' },
   )
 
+  it('at()', function () { 
+    strictEqual(true, simple.at(0)?.id === '1' && simple.at(-1)?.id === '4' && simple.at(2 ^ 9) === void 0)
+  })
+
   it('forEach()', function () { 
     const list: string[] = []
     simple.forEach((data) => list.push(data.id))
     strictEqual('1234', list.join(''))
   })
 
-  it('getter() value', function () { 
+  it('get() value', function () { 
     strictEqual('3', simple.get('3')!.id)
   })
 
-  it('getter() null', function () { 
+  it('get() null', function () { 
     strictEqual(null, simple.get(''))
   })
 
