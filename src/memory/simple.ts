@@ -96,7 +96,7 @@ export class MemorySimple<T, Type extends Memory.Type> implements Basic<T, numbe
   }
 
   /**
-   * 获取指定类型存储数据
+   * 判断是否包含指定类型
    */
   includes(type: Type) { 
     return this.#memory.includes(type)

@@ -12,6 +12,7 @@ interface Anchor {
 }
 
 interface Config { 
+  /** 多边之间的间隔弧长 */
   radOffsetRaidx?: number
   getBox(id: string): IBox
 }
@@ -33,6 +34,13 @@ export default class Neo4jAhchors<INode extends object, IEdge extends object> {
       [neo4j.sourceField]: start,
       [neo4j.targetField]: end
     })
+  }
+
+  /**
+   * 设置多边间隔弧长
+   */
+  setRaidx(value: number) { 
+    this.config.radOffsetRaidx = value
   }
 
   /**
