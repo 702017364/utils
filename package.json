@@ -19,7 +19,7 @@
     "mocha": "mocha __tests/**/*.js",
     "test": "npm run mocha",
     "prepublishOnly": "npm run build & npm run test",
-    "debug": "npm run build & npm run premocha"
+    "debug": "npm run start & npm run premocha"
   },
   "exports": {
     ".": {

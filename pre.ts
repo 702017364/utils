@@ -1,4 +1,4 @@
-import { build } from 'esbuild'
+import { BuildOptions, build } from 'esbuild'
 import { dependencies, devDependencies } from './package.json'
 
 const external: string[] = []
@@ -12,7 +12,7 @@ const setExternal = (dependencies: Record<string, string>) => {
 setExternal(dependencies)
 setExternal(devDependencies)
 
-build({
+build<BuildOptions>({
   entryPoints: ['./build.ts'],
   format: 'cjs',
   bundle: true,

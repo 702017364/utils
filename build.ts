@@ -4,7 +4,7 @@ import rollupJSONPlugin from '@rollup/plugin-json'
 import rollupNodeResolvePlugin from '@rollup/plugin-node-resolve'
 import rollupTypescriptPlugin from '@rollup/plugin-typescript'
 import { exec } from 'child_process'
-import { build } from 'esbuild'
+import { BuildOptions, build } from 'esbuild'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from 'fs'
 import { globSync } from 'glob'
 import { dirname, join, parse, relative, sep } from 'path'
@@ -135,8 +135,9 @@ class TestEnvironment extends Environment {
       const data = parse(relative('tests', file))
       const test = locals[join(data.dir, data.name + '.js')]
       if (!test) return false
-      const buildTime = statSync(join(root, test)).mtime
-      return !this.queryAssociateFiles(join(root, file)).some((file) => statSync(file).mtime >= buildTime)
+      const originMtime = statSync(file).mtime
+      const buildMtime = statSync(join(root, test)).mtime
+      return originMtime > buildMtime || this.queryAssociateFiles(join(root, file)).some((file) => statSync(file).mtime >= buildMtime)
     })
   }
 
@@ -259,7 +260,7 @@ class TestEnvironment extends Environment {
   }
 
   private BuildExamples() { 
-    build({
+    build<BuildOptions>({
       entryPoints: globSync('./examples/**/!(_*).ts'),
       format: 'iife',
       outdir: this.examples,
@@ -274,8 +275,8 @@ class TestEnvironment extends Environment {
   private async next(index: number): Promise<void> { 
     const { list, files, tests } = this
     if (index >= list.length) return
-    if (!list[index]) {
-      list[index] = true
+    if (list[index]) {
+      list[index] = false
       const input = files[index]
       const build = await rollup({
         input,
@@ -329,7 +330,7 @@ class ProductionEnvironment extends Environment {
   private types = 'types'
 
   private buildESM() { 
-    build({
+    build<BuildOptions>({
       entryPoints: globSync('./src/**/*.ts'),
       outbase: 'src',
       format: 'esm',
@@ -340,7 +341,7 @@ class ProductionEnvironment extends Environment {
   }
 
   private buildCJS() { 
-    build({
+    build<BuildOptions>({
       entryPoints: ['./src/index.ts'],
       format: 'cjs',
       outdir: this.cjs,
