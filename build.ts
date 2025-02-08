@@ -134,7 +134,7 @@ class TestEnvironment extends Environment {
     return this.files.map((file) => { 
       const data = parse(relative('tests', file))
       const test = locals[join(data.dir, data.name + '.js')]
-      if (!test) return false
+      if (!test) return true
       const originMtime = statSync(file).mtime
       const buildMtime = statSync(join(root, test)).mtime
       return originMtime > buildMtime || this.queryAssociateFiles(join(root, file)).some((file) => statSync(file).mtime >= buildMtime)

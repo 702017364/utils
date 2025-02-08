@@ -16,9 +16,9 @@ const ESM = <T extends object>(data: T) => {
     : data
 }
 
-(() => { 
-  const root = resolve(process.cwd(), 'src')
-
+const root = resolve(process.cwd(), 'src')
+  
+export const getList = () => { 
   const exclude = join(root, 'index.ts')
   
   const re_file = /(?<!\.d)\.ts$/
@@ -131,7 +131,11 @@ const ESM = <T extends object>(data: T) => {
 
   hunt(root)
 
-  const data = list.reduce((caches, [from, items]) => { 
+  return list
+}
+
+(() => { 
+  const data = getList().reduce((caches, [from, items]) => { 
     const groups = items.reduce((caches, data) => { 
       const name = data.default
         ? `default as ${data.name}`

@@ -5,12 +5,12 @@ interface Rule {
   range: [number, number]
 }
 
-interface DecryptRule extends Rule { 
+export interface DesensDecrypt extends Rule { 
   /** 密文长度 */
   modify: number
 }
 
-interface EncryptRule extends Rule { 
+export interface DesensEncrypt extends Rule { 
   /** 密文 */
   ciphertext: string
 }
@@ -21,8 +21,8 @@ interface EncryptRule extends Rule {
  * @param encrypt 加密方法 
  * @returns 解密要素
  */
-export const desensEncrypt = (plaintext: string, encrypt: (plaintext: string) => EncryptRule[]) => { 
-  const rules: DecryptRule[] = []
+export const desensEncrypt = (plaintext: string, encrypt: (plaintext: string) => DesensEncrypt[]) => { 
+  const rules: DesensDecrypt[] = []
   let point = -1
   let ciphertext = encrypt(plaintext).reduce((cache, { range, ciphertext }) => { 
     cache += plaintext.slice(point + 1, range[0]) + ciphertext
@@ -44,11 +44,11 @@ export const desensEncrypt = (plaintext: string, encrypt: (plaintext: string) =>
 
 /**
  * 脱敏解密(对密文进行多个片段解密)
- * @param plaintext 密文
+ * @param ciphertext 密文
  * @param rules 解密要素
  * @param decrypt 解密方法
  */
-export const desensDecrypt = (ciphertext: string, rules: DecryptRule | DecryptRule[], decrypt: (ciphertext: string) => string) => { 
+export const desensDecrypt = (ciphertext: string, rules: DesensDecrypt | DesensDecrypt[], decrypt: (ciphertext: string) => string) => { 
   Array.isArray(rules) || (rules = [rules])
   let offset = 0
   let from = 0
@@ -70,7 +70,7 @@ type Replacer = string | {
  * @param rules 解密要素
  * @param replacer 替换者
  */
-export const desensReplace = (ciphertext: string, rules: DecryptRule | DecryptRule[], replacer: Replacer = '*') => { 
+export const desensReplace = (ciphertext: string, rules: DesensDecrypt | DesensDecrypt[], replacer: Replacer = '*') => { 
   Array.isArray(rules) || (rules = [rules])
   let offset = 0
   let from = 0
