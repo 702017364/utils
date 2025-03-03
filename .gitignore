@@ -7,3 +7,5 @@ node_modules
 /__*
 /src/index.ts
 /*.cjs
+/sub_*
+tsconfig._*.json

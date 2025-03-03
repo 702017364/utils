@@ -3,18 +3,22 @@ import rollupCommonjsPlugin from '@rollup/plugin-commonjs'
 import rollupJSONPlugin from '@rollup/plugin-json'
 import rollupNodeResolvePlugin from '@rollup/plugin-node-resolve'
 import rollupTypescriptPlugin from '@rollup/plugin-typescript'
-import { exec } from 'child_process'
+import { execSync } from 'child_process'
 import { BuildOptions, build } from 'esbuild'
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs'
 import { globSync } from 'glob'
-import { dirname, join, parse, relative, sep } from 'path'
+import { cloneDeep } from 'lodash-es'
+import { dirname, extname, join, parse, relative, sep } from 'path'
 import { rimrafSync } from 'rimraf'
 import { Plugin, rollup } from 'rollup'
+import { v4 } from 'uuid'
 import { dependencies, devDependencies, name } from './package.json'
+import { effects, re_effect } from './start'
 import { compilerOptions } from './tsconfig.json'
+import tsconfig from './tsconfig.template.json'
 
 class Externals { 
-  list!: Set<string>
+  list = new Set<string>()
 
   constructor(private excludes?: RegExp) { 
     this.each(dependencies)
@@ -22,14 +26,10 @@ class Externals {
   }
 
   private each(data: Record<string, string>) { 
-    const { excludes } = this
-    const list = new Set<string>()
-
+    const { excludes, list } = this
     for (const key in data) { 
       (excludes && excludes.test(key)) || list.add(key)
     }
-
-    this.list = list
   }
 }
 
@@ -296,7 +296,7 @@ class TestEnvironment extends Environment {
       const data = parse(input.split(sep).slice(1).join(sep))
       const file = data.dir + sep + data.name + '.js'
       await build.write({
-        format: 'esm',
+        format: 'cjs',
         file: join(this.root, tests, file)
       })
       console.log(`\x1b[33m${join(tests, file)}\x1b[0m \x1b[34mCompilation completed\x1b[0m`)
@@ -322,57 +322,205 @@ class TestEnvironment extends Environment {
   }
 }
 
+interface EntryPoint { 
+  cjs: string
+  esm: string
+}
+
+interface Production { 
+  entryPoint: string | EntryPoint
+  outdir: string
+  outbase: string
+  effect?: boolean
+}
+
+interface Effect { 
+  entryPoint: string
+  outdir: string
+  outbase: string
+}
+
+interface Package { 
+  types: string
+  import: string
+  require: string
+}
+
+type TupleKV<T, V extends keyof T = keyof T> = [V, T[V]] 
+
+const getEffect = (() => { 
+  const data = effects.reduce<Record<string, Effect>>((caches, effect) => { 
+    const data = effect.split(re_effect)
+    caches[effect] = {
+      entryPoint: effect,
+      outdir: `sub_${data[1]}`,
+      outbase: data.slice(0, 2).join(sep),
+    }
+    return caches
+  }, {})
+
+  return (effect: string) => { 
+    return data[effect]
+  }
+})()
+
+const formatterPath = (path: string) =>
+  path.replaceAll('\\', '/')
+
 class ProductionEnvironment extends Environment { 
-  private esm = 'lib'
+  private dist = 'dist'
 
-  private cjs = 'cjs'
+  private mjs = '.js'
 
-  private types = 'types'
+  private cjs = '.cjs.js'
 
-  private buildESM() { 
-    build<BuildOptions>({
-      entryPoints: globSync('./src/**/*.ts'),
-      outbase: 'src',
+  private async buildESM(entryPoints: string[], outdir: string, outbase: string) { 
+    await build<BuildOptions>({
+      entryPoints,
+      outbase,
       format: 'esm',
-      outdir: this.esm,
+      outdir,
       define: this.define,
       platform: 'browser',
+      outExtension: {
+        '.js': this.mjs,
+      },
     })
   }
 
-  private buildCJS() { 
-    build<BuildOptions>({
-      entryPoints: ['./src/index.ts'],
+  private async buildCJS(entryPoints: string[], outdir: string, outbase: string) { 
+    await build<BuildOptions>({
+      entryPoints: entryPoints,
+      outbase,
       format: 'cjs',
-      outdir: this.cjs,
+      outdir,
       bundle: true,
       define: this.define,
       external: Array.from(this.getExternals(/^@vope\//)),
       treeShaking: true,
+      outExtension: {
+        '.js': this.cjs,
+      },
     })
   }
 
-  private buildTS() { 
-    exec('tsc -p ./tsconfig.types.json', (error) => { 
-      if (error) throw error
+  private buildTS(entryPoint: string, outdir: string, effect?: boolean) { 
+    const file = join(__dirname, `tsconfig._${v4().replaceAll('-', '_')}.json`)
+    const newTsconfig = cloneDeep(tsconfig)
+    newTsconfig.compilerOptions.declarationDir = outdir
+    const list = entryPoint.split(re_effect)
+    const lastValue = list[list.length - 1]
+    list[0][0] === '.' && list.shift()
+    if (lastValue === '*.ts') {
+      list[list.length - 1] = '*.ts'
+    } else if (extname(lastValue) === '.ts') { 
+      list[list.length - 1] = '**/*.ts'
+    }
+    const include = list.join('/')
+    newTsconfig.include.push(include)
+    writeFileSync(file, JSON.stringify(newTsconfig, void 0, 2), { encoding: 'utf-8' })
+    try {
+      execSync(`tsc -p ./${file}`)
       const { root } = this
-      globSync('./src/**/*.d.ts').forEach((file) => { 
-        const list = file.split(sep).slice(1)
-        const dir = join(root, this.types, ...list.slice(0, -1))
+      const files = globSync(formatterPath(join(dirname(include), '*.d.ts')), {
+        ignore: effect
+          ? void 0
+          : effects.map((effect) => {
+            return extname(effect) === '.ts'
+              ? formatterPath(join(dirname(effect), '**', '*.d.ts'))
+              : effect
+          }),
+      })
+      const outbase = list.filter((text) => !text.includes('*')).join(sep)
+      files.forEach((file) => {
+        const list = relative(outbase, file).split(sep)
+        const dir = join(root, outdir, ...list.slice(0, -1))
         existsSync(dir) || mkdirSync(dir)
         copyFileSync(join(root, file), join(dir, list[list.length - 1]))
       })
+      rmSync(file)
+    } catch (e) { 
+      rmSync(file)
+      throw e
+    }
+  }
+
+  private buildPackage(entryPoint: string, outdir: string) { 
+    const { name } = parse(entryPoint)
+    if (name.includes('*')) return
+    const dir = join(this.root, outdir)
+    const list: TupleKV<Package>[] = [
+      ['types', name + '.d.ts'],
+      ['import', name + this.mjs],
+      ['require', name + this.cjs],
+    ]
+    const data = {} as Package
+    let count = 0
+    list.forEach(([key, value]) => { 
+      if (existsSync(join(dir, value))) { 
+        count++
+        data[key] = value
+      }
     })
+    count && writeFileSync(join(dir, 'package.json'), JSON.stringify(data, null, 2))
   }
 
   build() { 
-    this.buildESM()
-    this.buildCJS()
-    this.buildTS()
+    const hash = globSync(effects).reduce<Record<string, string>>((caches, file) => { 
+      caches[file] = file
+      return caches
+    }, {})
+    const list: Production[] = [
+      {
+        entryPoint: {
+          esm: './src/**/*.ts',
+          cjs: './src/index.ts',
+        },
+        outbase: 'src',
+        outdir: this.dist,
+      },
+    ]
+    effects.forEach((effect) => { 
+      const data = getEffect(effect)
+      list.push({
+        entryPoint: data.entryPoint,
+        outdir: data.outdir,
+        outbase: data.outbase,
+        effect: true,
+      })
+    })
+    list.forEach(async ({ entryPoint, outdir, effect, outbase }) => { 
+      if (typeof entryPoint === 'string') { 
+        entryPoint = { esm: entryPoint, cjs: entryPoint }
+      }
+      const esm = globSync(entryPoint.esm, {
+        ignore: '**/*.d.ts',
+      })
+      const cjs = globSync(entryPoint.cjs, {
+        ignore: '**/*.d.ts',
+      })
+      await Promise.all([
+        this.buildESM(
+          effect ? esm : esm.filter((value) => value in hash === false),
+          outdir,
+          outbase,
+        ),
+        this.buildCJS(
+          effect ? cjs : cjs.filter((value) => value in hash === false),
+          outdir,
+          outbase,
+        ),
+        this.buildTS(entryPoint.esm, outdir, effect),
+      ])
+      effect && this.buildPackage(entryPoint.cjs, outdir)
+    })
   }
 
   clear() { 
-    rimrafSync([this.esm, this.cjs, this.types])
+    rimrafSync([
+      this.dist,
+      ...effects.map((effect) => getEffect(effect).outdir),
+    ])
   }
 }
 

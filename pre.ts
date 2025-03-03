@@ -3,9 +3,16 @@ import { dependencies, devDependencies } from './package.json'
 
 const external: string[] = []
 
+const excludes = ([
+  'lodash-es'
+] satisfies string[]).reduce<Record<string, string>>((caches, exclude) => { 
+  caches[exclude] = exclude
+  return caches
+}, {})
+
 const setExternal = (dependencies: Record<string, string>) => { 
   for (const key in dependencies) {
-    external.push(key)
+    key in excludes || external.push(key)
   }
 }
 

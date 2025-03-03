@@ -2,7 +2,7 @@ import { parse as Parse } from '@babel/parser'
 import traverse from '@babel/traverse'
 import { isClassDeclaration, isExportSpecifier, isFunctionDeclaration, isIdentifier, isTSInterfaceDeclaration, isTSModuleDeclaration, isTSTypeAliasDeclaration, isVariableDeclaration } from '@babel/types'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
-import { join, parse, relative, resolve } from 'path'
+import { join, parse, relative, resolve, sep } from 'path'
 
 interface Item {
   name: string
@@ -17,15 +17,21 @@ const ESM = <T extends object>(data: T) => {
 }
 
 const root = resolve(process.cwd(), 'src')
-  
-export const getList = () => { 
+
+export const re_effect = /[/\\]+/g
+
+export const effects = [
+  'src/storage/offline.ts',
+]
+
+const collet = () => { 
   const exclude = join(root, 'index.ts')
   
   const re_file = /(?<!\.d)\.ts$/
   const re_name = /^(?!_)/
   const re_horizontal = /-(\w)/g
   const re_path = /\\+|\/{2,}/g
-
+  
   const list: [string, Item[]][] = []
   let count = 0
   const push = (index: number, path: string, data: Item) => { 
@@ -49,14 +55,16 @@ export const getList = () => {
     }
     items[1].push(data)
   }
+
+  const effects0 = effects.map((effect) => effect.replace(re_effect, sep))
   
-  const hunt = (path: string) => { 
+  const collet0 = (path: string) => { 
     readdirSync(path, { encoding: 'utf-8' }).forEach((file) => { 
       const index = count++
       const src = resolve(path, file)
-      if (src === exclude) return
+      if (src === exclude || effects0.some((effect) => src.includes(effect))) return
       if (statSync(src).isDirectory()) {
-        hunt(src)
+        collet0(src)
       } else if (re_name.test(file) && re_file.test(file)) { 
         const code = readFileSync(src, { encoding: 'utf-8' })
         if (!code) return
@@ -129,13 +137,13 @@ export const getList = () => {
     })
   }
 
-  hunt(root)
+  collet0(root)
 
   return list
 }
 
 (() => { 
-  const data = getList().reduce((caches, [from, items]) => { 
+  const data = collet().reduce((caches, [from, items]) => { 
     const groups = items.reduce((caches, data) => { 
       const name = data.default
         ? `default as ${data.name}`

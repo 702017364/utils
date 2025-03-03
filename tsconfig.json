@@ -8,6 +8,9 @@
       "@vope/utils": [
         "src/index.ts"
       ],
+      "@vope/utils/storage": [
+        "src/storage/offline.ts"
+      ],
       "@examples/*": [
         "examples/*"
       ]

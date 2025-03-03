@@ -3,11 +3,10 @@
   "compilerOptions": {
     "emitDeclarationOnly": true,
     "declaration": true,
-    "declarationDir": "types",
+    "declarationDir": "dist",
     "paths": {}
   },
   "include": [
-    "src/**/*",
     "shims.*.d.ts"
   ]
 }

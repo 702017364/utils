@@ -1,16 +1,15 @@
 {
   "name": "@vope/utils",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "",
-  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "types": "./types/index.d.ts",
-  "typings": "./types/index.d.ts",
-  "module": "./lib/index.js",
-  "main": "./cjs/index.js",
+  "types": "./dist/index.d.ts",
+  "typings": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "start": "esbuild ./start.ts --outfile=start.cjs --format=cjs & node ./start.cjs",
     "poststart": "esbuild ./pre.ts --outfile=pre.cjs --format=cjs & node ./pre.cjs",
@@ -19,24 +18,26 @@
     "mocha": "mocha __tests/**/*.js",
     "test": "npm run mocha",
     "prepublishOnly": "npm run build & npm run test",
-    "debug": "npm run start & npm run premocha"
+    "debug": "npm run start & npm run premocha",
+    "clean": "rimraf start.cjs pre.cjs build.cjs src/index.ts dist/ __tests/ __examples/ sub_storage/"
   },
   "exports": {
     ".": {
-      "import": "./lib/index.js",
-      "require": "./cjs/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs.js"
+    },
+    "./storage": {
+      "types": "./sub_storage/offline.d.ts",
+      "import": "./sub_storage/offline.js",
+      "require": "./sub_storage/offline.cjs.js"
     }
   },
   "author": "vope",
   "license": "ISC",
-  "sideEffects": [
-    "lib/storage/offline.js",
-    "src/storage/offline.ts"
-  ],
   "files": [
-    "cjs",
-    "lib",
-    "types"
+    "dist",
+    "sub_storage"
   ],
   "devDependencies": {
     "@babel/parser": "^7.26.9",
@@ -59,7 +60,8 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.34.8",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "uuid": "^11.1.0"
   },
   "dependencies": {
     "@type-challenges/utils": "^0.1.1",
