@@ -8,6 +8,24 @@ describe('connectURLParams()', function () {
     strictEqual(url, connectURLParams(url, {}, {}))
   })
 
+  it('Not serializes', function () { 
+    strictEqual(url + '?a=a&a1=null&a2=&a3=undefined&b=2&c=2&d=false&e1=%5Bobject+Object%5D&e2=e2', connectURLParams(url, {
+      a: 'a',
+      a1: null,
+      a2: '',
+      a3: undefined,
+      b: 2,
+      c: '2',
+      d: false,
+      e1: {},
+      e2: {
+        toString() { 
+          return 'e2'
+        },
+      },
+    }))
+  })
+
   it('There are parameters', function () {
     interface T1 {
       a: string

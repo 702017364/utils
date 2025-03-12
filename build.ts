@@ -116,7 +116,7 @@ class TestEnvironment extends Environment {
 
   constructor() { 
     super()
-    const external = this.getExternals(/^(?:@vope\/|sm-crypto|localforage)/)
+    const external = this.getExternals(/^(?:@vope\/|sm-crypto|localforage|lodash-es)/)
     external.add('assert')
     external.add('fs')
     external.add('path')
