@@ -75,7 +75,8 @@ const collet = () => {
           ],
         })
         ESM(traverse)(ast, {
-          ExportNamedDeclaration({ node: { declaration, specifiers }, scope: { bindings } }) { 
+          ExportNamedDeclaration(path) {
+            const { node: { declaration, specifiers }, scope: { bindings } } = path
             if (declaration) {
               if (isVariableDeclaration(declaration)) {
                 const lval = declaration.declarations[0].id
@@ -97,6 +98,7 @@ const collet = () => {
                     isTS: true,
                   })
                 }
+                path.skip()
               }
             } else { 
               specifiers.forEach((specifier) => { 
@@ -131,7 +133,7 @@ const collet = () => {
                 default: true,
               })
             }
-          }
+          },
         })
       }
     })
