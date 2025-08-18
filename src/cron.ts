@@ -170,6 +170,9 @@ export const default_min_week = 0
 
 const re_single_number_text = '\\d'
 
+/**
+ * 生成Cron表达式正则
+ */
 export const createCronRegexText = (options: Options = {}) => {
   const {
     enableSlot = true,
@@ -395,11 +398,14 @@ export const createCronRegexText = (options: Options = {}) => {
   }
 }
 
-interface BasicValue { 
+interface BasicUnit { 
   text(): string
 }
 
-export class InvalidValue implements BasicValue { 
+/**
+ * 占位符单元(即'?')
+ */
+export class InvalidUnit implements BasicUnit { 
   constructor(private isEnableInvalid: boolean) { }
 
   text() {
@@ -409,44 +415,68 @@ export class InvalidValue implements BasicValue {
   }
 }
 
-export const isInvalidValue = (value: unknown) => 
-  value instanceof InvalidValue
+/**
+ * 判断一个值是否为占位符单元
+ */
+export const isInvalidUnit = (value: unknown) => 
+  value instanceof InvalidUnit
 
-abstract class LastValue implements BasicValue { 
+abstract class LastValue implements BasicUnit { 
   constructor(public value: number) { }
 
   abstract text(): string
 }
 
-export class DayLastValue extends LastValue { 
+/**
+ * 倒数(日)值单元
+ */
+export class DayLastUnit extends LastValue { 
   text() {
     const { value } = this
     return 'L' + (value ? `-${value}` : '')
   }
 }
 
-export const isDayLastValue = (value: unknown) => 
-  value instanceof DayLastValue
+/**
+ * 判断一个值是否为倒数(日)值单元
+ */
+export const isDayLastUnit = (value: unknown) => 
+  value instanceof DayLastUnit
 
-export class WeekLastValue extends LastValue { 
+/**
+ * 倒数(周)值单元
+ */
+export class WeekLastUnit extends LastValue { 
   text() {
     return `${this.value}L`
   }
 }
 
-export const isWeekLastValue = (value: unknown) =>
-  value instanceof WeekLastValue
+/**
+ * 判断一个值是否为倒数(周)值单元
+ */
+export const isWeekLastUnit = (value: unknown) =>
+  value instanceof WeekLastUnit
 
-export class WildcardValue implements BasicValue { 
+/**
+ * 通配值单元(即'*')
+ */
+export class WildcardUnit implements BasicUnit { 
   text() { 
     return '*'
   }
 }
 
-export const isWildcardValue = (value: unknown) =>
-  value instanceof WildcardValue
+/**
+ * 判断一个值是否为通配值单元
+ */
+export const isWildcardUnit = (value: unknown) =>
+  value instanceof WildcardUnit
 
-export class RangeValue implements BasicValue { 
+/**
+ * 范围值单元
+ */
+export class RangeUnit implements BasicUnit { 
   constructor(public start: number, public stop: number) { }
 
   text() { 
@@ -454,14 +484,20 @@ export class RangeValue implements BasicValue {
   }
 }
 
-export const isRangeValue = (value: unknown) =>
-  value instanceof RangeValue
+/**
+ * 判断一个值是否为范围值单元
+ */
+export const isRangeUnit = (value: unknown) =>
+  value instanceof RangeUnit
 
-type IGroup = number | DayLastValue | WeekLastValue | RangeValue
+type IGroup = number | DayLastUnit | WeekLastUnit | RangeUnit
 
-type IValues = WildcardValue | IGroup[]
+type IValues = WildcardUnit | IGroup[]
 
-export class DigitsValue implements BasicValue { 
+/**
+ * 聚合值单元
+ */
+export class AggUnit implements BasicUnit { 
   constructor(public values: IValues, public increment?: number) { }
 
   text() { 
@@ -488,8 +524,11 @@ export class DigitsValue implements BasicValue {
   }
 }
 
-export const isDigitsValue = (value: unknown) => 
-  value instanceof DigitsValue
+/**
+ * 判断一个值是否为聚合值单元
+ */
+export const isAggUnit = (value: unknown) => 
+  value instanceof AggUnit
 
 const re_num = /\d/
 
@@ -501,22 +540,22 @@ const parseDigit = (text: string) => {
   }
 }
 
-const parseDigits = (text: string) => { 
+const parseAgg = (text: string) => { 
   return text.split(',').map<IGroup>((text) => { 
     const [a, b] = text.split('-')
     if (a === 'L' && b === void 0) { 
-      return new DayLastValue(0)
+      return new DayLastUnit(0)
     } else if (b === void 0) {
       if (a.slice(-1) === 'L') {
-        return new WeekLastValue(parseInt(a.slice(0, -1)))
+        return new WeekLastUnit(parseInt(a.slice(0, -1)))
       } else { 
         return parseDigit(a)
       }
     } else { 
       if (a === 'L') {
-        return new DayLastValue(parseInt(b))
+        return new DayLastUnit(parseInt(b))
       } else { 
-        return new RangeValue(parseDigit(a), parseDigit(b))
+        return new RangeUnit(parseDigit(a), parseDigit(b))
       }
     }
   })
@@ -544,18 +583,18 @@ const validateIncrement = (value: number | undefined, min: number, max: number) 
     && value <= max
 }
 
-type Digits<T extends string = never> = '*' | number | T | (number | T | [number, number])[]
+type IValue<T extends string = never> = '*' | number | T | (number | T | [number, number])[]
 
-type BasicDigits = Digits
+type BasicValue = IValue
 
-type DayDigits = Digits<'L' | `L-${number}`>
+type DayValue = IValue<'L' | `L-${number}`>
 
-type WeekDigits = Digits<`${number}L`>
+type WeekValue = IValue<`${number}L`>
 
-const formaterDigits = (value: BasicDigits, min: number, max: number) => { 
+const formaterAgg = (value: BasicValue, min: number, max: number) => { 
   let values: IValues | undefined
   if (value === '*') {
-    values = new WildcardValue()
+    values = new WildcardUnit()
   } else if (Array.isArray(value)) {
     const tmp: IGroup[] = []
     value.some((data) => { 
@@ -563,7 +602,7 @@ const formaterDigits = (value: BasicDigits, min: number, max: number) => {
         tmp.push(
           isNumber(data)
             ? data
-            : new RangeValue(data[0], data[1])
+            : new RangeUnit(data[0], data[1])
         )
         return false
       } else { 
@@ -576,16 +615,16 @@ const formaterDigits = (value: BasicDigits, min: number, max: number) => {
   return values
 }
 
-const formaterLastDigits = (value: DayDigits | WeekDigits, min: number, max: number, prototype: typeof LastValue) => { 
+const formaterAggByLast = (value: DayValue | WeekValue, min: number, max: number, prototype: typeof LastValue) => { 
   let values: IValues | undefined
   if (value === '*') {
-    values = new WildcardValue()
+    values = new WildcardUnit()
   } else { 
     const tmp: IGroup[] = []
     const list = Array.isArray(value) ? value : [value]
     list.some((data) => { 
       if (isString(data)) {
-        const result = parseDigits(data)
+        const result = parseAgg(data)
         if (result.length === 1 && result[0] instanceof prototype && validate(result[0].value, min, max - 1)) {
           tmp.push(result[0])
           return false
@@ -594,7 +633,7 @@ const formaterLastDigits = (value: DayDigits | WeekDigits, min: number, max: num
         tmp.push(
           isNumber(data)
             ? data
-            : new RangeValue(data[0], data[1])
+            : new RangeUnit(data[0], data[1])
         )
         return false
       }
@@ -605,13 +644,13 @@ const formaterLastDigits = (value: DayDigits | WeekDigits, min: number, max: num
 }
 
 class Parse { 
-  second?: DigitsValue
-  minute: DigitsValue
-  hour: DigitsValue
-  day: InvalidValue | DigitsValue
-  month: DigitsValue
-  week: InvalidValue | DigitsValue
-  year?: DigitsValue
+  second?: AggUnit
+  minute: AggUnit
+  hour: AggUnit
+  day: InvalidUnit | AggUnit
+  month: AggUnit
+  week: InvalidUnit | AggUnit
+  year?: AggUnit
 
   constructor(
     second: string | undefined,
@@ -624,36 +663,36 @@ class Parse {
     public cron: Cron
   ) { 
     if (second) { 
-      this.second = this.parse(second) as DigitsValue
+      this.second = this.parse(second) as AggUnit
     }
-    this.minute = this.parse(minute) as DigitsValue
-    this.hour = this.parse(hour) as DigitsValue
-    this.day = this.parse(day) as InvalidValue | DigitsValue
-    this.month = this.parse(month) as DigitsValue
-    this.week = this.parse(week) as InvalidValue | DigitsValue
+    this.minute = this.parse(minute) as AggUnit
+    this.hour = this.parse(hour) as AggUnit
+    this.day = this.parse(day) as InvalidUnit | AggUnit
+    this.month = this.parse(month) as AggUnit
+    this.week = this.parse(week) as InvalidUnit | AggUnit
     if (year) { 
-      this.year = this.parse(year) as DigitsValue
+      this.year = this.parse(year) as AggUnit
     }
   }
 
-  parse(text: string): InvalidValue | DigitsValue { 
-    if (text === '?') return new InvalidValue(this.cron.isEnableInvalid)
+  parse(text: string): InvalidUnit | AggUnit { 
+    if (text === '?') return new InvalidUnit(this.cron.isEnableInvalid)
     const [slices, increment] = text.split('/')
-    return new DigitsValue(
+    return new AggUnit(
       slices === '*'
-        ? new WildcardValue()
-        : parseDigits(slices),
+        ? new WildcardUnit()
+        : parseAgg(slices),
       increment
         ? parseInt(increment)
         : void 0
     )
   }
 
-  setSecond(value: BasicDigits, increment?: number): boolean { 
+  setSecond(value: BasicValue, increment?: number): boolean { 
     if (!this.cron.isEnableSecond) return false
-    const values = formaterDigits(value, default_min_second, default_max_second)
+    const values = formaterAgg(value, default_min_second, default_max_second)
     if (!values) return false
-    const second = new DigitsValue(values)
+    const second = new AggUnit(values)
     if (validateIncrement(increment, default_min_second, default_max_second)) { 
       second.increment = increment
     }
@@ -661,10 +700,10 @@ class Parse {
     return true
   }
 
-  setMinute(value: BasicDigits, increment?: number): boolean { 
-    const values = formaterDigits(value, default_min_minute, default_max_minute)
+  setMinute(value: BasicValue, increment?: number): boolean { 
+    const values = formaterAgg(value, default_min_minute, default_max_minute)
     if (!values) return false
-    const minute = new DigitsValue(values)
+    const minute = new AggUnit(values)
     if (validateIncrement(increment, default_min_minute, default_max_minute)) { 
       minute.increment = increment
     }
@@ -672,10 +711,10 @@ class Parse {
     return true
   }
 
-  setHour(value: BasicDigits, increment?: number): boolean { 
-    const values = formaterDigits(value, default_min_hour, default_max_hour)
+  setHour(value: BasicValue, increment?: number): boolean { 
+    const values = formaterAgg(value, default_min_hour, default_max_hour)
     if (!values) return false
-    const hour = new DigitsValue(values)
+    const hour = new AggUnit(values)
     if (validateIncrement(increment, default_min_hour, default_max_hour)) { 
       hour.increment = increment
     }
@@ -684,45 +723,45 @@ class Parse {
   }
 
   setDayInvalid() { 
-    this.day = new InvalidValue(this.cron.isEnableInvalid)
-    if (this.week instanceof InvalidValue) { 
-      this.week = new DigitsValue(new WildcardValue())
+    this.day = new InvalidUnit(this.cron.isEnableInvalid)
+    if (this.week instanceof InvalidUnit) { 
+      this.week = new AggUnit(new WildcardUnit())
     }
   }
 
   setDay(value: '?'): boolean
-  setDay(value: DayDigits, increment?: number): boolean
-  setDay(value: '?' | DayDigits, increment?: number): boolean {
+  setDay(value: DayValue, increment?: number): boolean
+  setDay(value: '?' | DayValue, increment?: number): boolean {
     let values: IValues
     if (value === '?') {
       this.setDayInvalid()
       return true
     } else { 
-      const tmp = formaterLastDigits(value, default_min_day, default_max_day, DayLastValue)
+      const tmp = formaterAggByLast(value, default_min_day, default_max_day, DayLastUnit)
       if (!tmp) return false
       values = tmp
     }
-    const tmp = new DigitsValue(values)
+    const tmp = new AggUnit(values)
     if (validateIncrement(increment, default_min_day, default_max_day)) { 
       tmp.increment = increment
     }
     this.day = tmp
     const { week } = this
-    if (isDigitsValue(week) && (week.increment !== void 0 || !isWildcardValue(week.values))) { 
+    if (isAggUnit(week) && (week.increment !== void 0 || !isWildcardUnit(week.values))) { 
       if (this.cron.isEnableInvalid) {
-        this.week = new InvalidValue(true)
+        this.week = new InvalidUnit(true)
       } else { 
-        week.values = new WildcardValue()
+        week.values = new WildcardUnit()
         week.increment = void 0
       }
     }
     return true
   }
 
-  setMonth(value: BasicDigits, increment?: number): boolean { 
-    const values = formaterDigits(value, default_min_month, default_max_month)
+  setMonth(value: BasicValue, increment?: number): boolean { 
+    const values = formaterAgg(value, default_min_month, default_max_month)
     if (!values) return false
-    const month = new DigitsValue(values)
+    const month = new AggUnit(values)
     if (validateIncrement(increment, default_min_month, default_max_month)) { 
       month.increment = increment
     }
@@ -731,46 +770,46 @@ class Parse {
   }
 
   setWeekInvalid() { 
-    this.week = new InvalidValue(this.cron.isEnableInvalid)
-    if (this.day instanceof InvalidValue) { 
-      this.day = new DigitsValue(new WildcardValue())
+    this.week = new InvalidUnit(this.cron.isEnableInvalid)
+    if (this.day instanceof InvalidUnit) { 
+      this.day = new AggUnit(new WildcardUnit())
     }
   }
 
   setWeek(value: '?'): boolean
-  setWeek(value: WeekDigits, increment?: number): boolean
-  setWeek(value: '?' | WeekDigits, increment?: number) { 
+  setWeek(value: WeekValue, increment?: number): boolean
+  setWeek(value: '?' | WeekValue, increment?: number) { 
     let values: IValues
     if (value === '?') {
       this.setWeekInvalid()
       return true
     } else { 
-      const tmp = formaterLastDigits(value, default_min_week, default_max_week, WeekLastValue)
+      const tmp = formaterAggByLast(value, default_min_week, default_max_week, WeekLastUnit)
       if (!tmp) return false
       values = tmp
     }
-    const tmp = new DigitsValue(values)
+    const tmp = new AggUnit(values)
     if (validateIncrement(increment, default_min_week, default_max_week)) { 
       tmp.increment = increment
     }
     this.week = tmp
     const { day } = this
-    if (isDigitsValue(day) && (day.increment !== void 0 || !isWildcardValue(day.values))) { 
+    if (isAggUnit(day) && (day.increment !== void 0 || !isWildcardUnit(day.values))) { 
       if (this.cron.isEnableInvalid) {
-        this.day = new InvalidValue(true)
+        this.day = new InvalidUnit(true)
       } else { 
-        day.values = new WildcardValue()
+        day.values = new WildcardUnit()
         day.increment = void 0
       }
     }
     return true
   }
 
-  setYear(value: BasicDigits, increment?: number): boolean { 
+  setYear(value: BasicValue, increment?: number): boolean { 
     if (!this.cron.isEnableYear) return false
-    const values = formaterDigits(value, 0, MAX_SAFE_INTEGER)
+    const values = formaterAgg(value, 0, MAX_SAFE_INTEGER)
     if (!values) return false
-    const year = new DigitsValue(values)
+    const year = new AggUnit(values)
     if (validateIncrement(increment, 0, MAX_SAFE_INTEGER)) { 
       year.increment = increment
     }

@@ -1,4 +1,4 @@
-import { Cron, isDigitsValue } from '@vope/utils'
+import { Cron, isAggUnit } from '@vope/utils'
 import { deepStrictEqual, strictEqual } from 'assert'
 import { isNumber } from 'lodash-es'
 
@@ -52,7 +52,7 @@ describe('class Cron', function () {
     }).parse('0 0 0 5 * *')?.day
 
     let result: unknown
-    if (isDigitsValue(day)) { 
+    if (isAggUnit(day)) { 
       const { values } = day
       if (Array.isArray(values) && values.length === 1) { 
         const tmp = values[0]

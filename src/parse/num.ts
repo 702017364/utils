@@ -1,6 +1,8 @@
 import { isNumber } from 'lodash-es'
 
-const pow = Math.floor(Math.log10(Number.MAX_SAFE_INTEGER))
+const { MAX_SAFE_INTEGER, NaN } = Number
+
+const pow = Math.floor(Math.log10(MAX_SAFE_INTEGER))
 
 const re_num = /^([-+]?)0*(\d+)(?:(n)|(?:\.(\d+))?(?:[Ee]([-+]?)(\d+))?)$/
 
@@ -14,7 +16,7 @@ const re_num = /^([-+]?)0*(\d+)(?:(n)|(?:\.(\d+))?(?:[Ee]([-+]?)(\d+))?)$/
 export const parseNum = (num: number | bigint | string) => { 
   if (isNumber(num) || typeof num === 'bigint') return num
   const match = num.match(re_num)
-  if (!match) return Number.NaN
+  if (!match) return NaN
   const [, valueSymbol, integer, bigint, decimal, powSymbol, powValue] = match
   if (bigint === 'n') return BigInt(valueSymbol + integer)
   const powSize = integer.length - 1 + (
@@ -24,7 +26,7 @@ export const parseNum = (num: number | bigint | string) => {
         : +powValue
       : 0
   )
-  if (powSize < pow || (powSize === pow && +integer.slice(0, -1) < Number.MAX_SAFE_INTEGER / 10)) return +num
+  if (powSize < pow || (powSize === pow && +integer.slice(0, -1) < MAX_SAFE_INTEGER / 10)) return +num
   try {
     const bigValue = BigInt(integer.slice(0, powSize + 1).padEnd(powSize + 1, '0'))
     let smallValue: bigint
@@ -43,6 +45,6 @@ export const parseNum = (num: number | bigint | string) => {
       ? value * BigInt(-1)
       : value
   } catch { 
-    return Number.NaN
+    return NaN
   }
 }
