@@ -1,5 +1,4 @@
-import { isDigitsValue } from '@/cron'
-import { Cron } from '@vope/utils'
+import { Cron, isDigitsValue } from '@vope/utils'
 import { deepStrictEqual, strictEqual } from 'assert'
 import { isNumber } from 'lodash-es'
 

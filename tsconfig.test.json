@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@vope/utils": [
+        "src/index.ts"
+      ],
+      "@vope/utils/storage": [
+        "src/storage/offline.ts"
+      ],
+      "@examples/*": [
+        "examples/*"
+      ]
+    },
+    "types": [
+      "@types/mocha",
+      "@types/node"
+    ]
+  },
+  "include": [
+    "tests/**/*.ts",
+    "examples/**/*.ts",
+    "shims.env.d.ts"
+  ]
+}

@@ -10,12 +10,12 @@ import { globSync } from 'glob'
 import { cloneDeep } from 'lodash-es'
 import { dirname, extname, join, parse, relative, sep } from 'path'
 import { rimrafSync } from 'rimraf'
-import { Plugin, rollup } from 'rollup'
+import { rollup } from 'rollup'
 import { v4 } from 'uuid'
 import { dependencies, devDependencies, name } from './package.json'
 import { effects, re_effect } from './start'
-import { compilerOptions } from './tsconfig.json'
 import tsconfig from './tsconfig.template.json'
+import { compilerOptions } from './tsconfig.test.json'
 
 class Externals { 
   list = new Set<string>()
@@ -33,17 +33,18 @@ class Externals {
   }
 }
 
-const getEntries = (root: string) => { 
-  const { paths } = compilerOptions
+const getEntries = (root: string, ...list: Record<string, string[]>[]) => { 
   const entries: Record<string, string> = {}
-  for (const key in paths) {
-    const [value] = (paths)[<keyof typeof paths>key]
-    if (key.slice(-1) === '*') {
-      entries[key.slice(0, -2)] = join(root, value.slice(0, -2))
-    } else {
-      entries[key] = join(root, value)
+  list.forEach((paths) => {
+    for (const key in paths) {
+      const [value] = (paths)[<keyof typeof paths>key]
+      if (key.slice(-1) === '*') {
+        entries[key.slice(0, -2)] = join(root, value.slice(0, -2))
+      } else {
+        entries[key] = join(root, value)
+      }
     }
-  }
+  })
   return entries
 }
 
@@ -106,11 +107,9 @@ class TestEnvironment extends Environment {
 
   private batch = 3
 
-  private entries = getEntries(this.root)
+  private entries = getEntries(this.root, compilerOptions.paths)
 
   private external: string[]
-
-  private rollupLoadUtilsPlugin = this.createRollupLoadUtilsPlugin()
 
   private table = this.getTable()
 
@@ -232,33 +231,6 @@ class TestEnvironment extends Environment {
     }
   }
 
-  private createRollupLoadUtilsPlugin(): Plugin { 
-    return {
-      name,
-      transform: (code, id) => {
-        if (!id.includes('tests')) return
-        const { table } = this
-        const newCode = code.replace(re_import, ($0, $1: string) => {
-          const list: string[] = []
-          this.parse($1, (src, values) => { 
-            list.push(`import {${values.map((key) => {
-              const data = table[key]
-              if (data.isType) {
-                return `type ${key}`
-              } else if (data.alia) {
-                return `${data.alia} as ${key}`
-              } else {
-                return key
-              }
-            }).join(',')}} from "@${src.slice(1)}"`)
-          })
-          return list.join('\n')
-        })
-        return newCode
-      }
-    }
-  }
-
   private BuildExamples() { 
     build<BuildOptions>({
       entryPoints: globSync('./examples/**/!(_*).ts'),
@@ -283,11 +255,12 @@ class TestEnvironment extends Environment {
         external: this.external,
         treeshake: true,
         plugins: [
-          this.rollupLoadUtilsPlugin,
           rollupAliasPlugin({
             entries: this.entries,
           }),
-          rollupTypescriptPlugin(),
+          rollupTypescriptPlugin({
+            tsconfig: './tsconfig.test.json',
+          }),
           rollupNodeResolvePlugin(),
           rollupCommonjsPlugin(),
           rollupJSONPlugin(),

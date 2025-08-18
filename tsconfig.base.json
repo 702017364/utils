@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
@@ -10,12 +9,7 @@
     "esModuleInterop": true,
     "lib": ["esnext", "dom"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "types": [
-      "@vope/types",
-      "@types/mocha",
-      "@types/node"
-    ]
+    "emitDecoratorMetadata": true
   },
   "exclude": [
     "dist",

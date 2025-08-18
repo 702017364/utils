@@ -1,19 +1,14 @@
 {
-  "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "paths": {
-      "@/*": [
-        "src/*"
-      ], 
-      "@vope/utils": [
-        "src/index.ts"
-      ],
-      "@vope/utils/storage": [
-        "src/storage/offline.ts"
-      ],
-      "@examples/*": [
-        "examples/*"
-      ]
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.test.json"
+    },
+    {
+      "path": "./tsconfig.app.json"
     }
-  }
+  ]
 }
