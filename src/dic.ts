@@ -20,7 +20,7 @@ interface Options<K extends Key, T extends Dic<K>, M extends string> {
 /**
  * 字典操作
  */
-export default class DicRollup<K extends Key, T extends Dic<K> = Dic<K>, Mode extends string = never> { 
+class DicRollup<K extends Key, T extends Dic<K> = Dic<K>, Mode extends string = never> { 
   #list: T[]
 
   #default?: K
@@ -132,3 +132,19 @@ export default class DicRollup<K extends Key, T extends Dic<K> = Dic<K>, Mode ex
     )
   }
 }
+
+namespace DicRollup { 
+  export type Type<T extends DicRollup<any, any, string>> = T extends DicRollup<infer K, any, string>
+    ? K
+    : never
+  
+  export type Dic<T extends DicRollup<any, any, string>> = T extends DicRollup<any, infer V, string>
+    ? V
+    : never
+  
+  export type Mode<T extends DicRollup<any, any, string>> = T extends DicRollup<any, any, infer M>
+    ? M
+    : never
+}
+
+export default DicRollup

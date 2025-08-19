@@ -1,3 +1,4 @@
+import { Equal, Expect, NotEqual } from '@type-challenges/utils'
 import { Dic, DicRollup } from '@vope/utils'
 import { deepStrictEqual, strictEqual } from 'assert'
 
@@ -41,6 +42,14 @@ describe('class DicRollup', () => {
       test: (data) => data.label + data.value,
     },
   })
+
+  type cases = [
+    Expect<Equal<DicRollup.Type<typeof dic>, Value>>,
+    Expect<NotEqual<DicRollup.Type<typeof dic>, number>>,
+    Expect<Equal<DicRollup.Dic<typeof dic>, IDic>>,
+    Expect<Equal<DicRollup.Mode<typeof dic>, 'test'>>,
+    Expect<NotEqual<DicRollup.Mode<typeof dic>, string>>,
+  ]
 
   it('includes', () => { 
     deepStrictEqual([

@@ -75,6 +75,9 @@ const collet = () => {
           ],
         })
         ESM(traverse)(ast, {
+          TSModuleDeclaration(path) { 
+            path.skip()
+          },
           ExportNamedDeclaration(path) {
             const { node: { declaration, specifiers }, scope: { bindings } } = path
             if (declaration) {
