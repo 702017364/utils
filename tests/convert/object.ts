@@ -1,17 +1,29 @@
 import { hash8object } from '@vope/utils'
-import { strictEqual } from 'assert'
+import { deepStrictEqual } from 'assert'
 
 describe('hash8object()', () => { 
-  interface Item<K extends unknown = unknown> { 
-    key: K
+  interface Item { 
+    key: Object
     value: number
   }
 
-  it('...', () => { 
-    const list = [
-      { key: String, value: 1 },
-      { key: Object, value: 2 }
-    ] as Item<object>[]
-    strictEqual(list[1], hash8object(list, 'key').get(Object))
+  it('default', () => { 
+    const uuid = Symbol()
+
+    deepStrictEqual(
+      hash8object<'key', Item>([
+        { key: String, value: 1 },
+        { key: Object, value: 2 },
+        { key: 1, value: 3 },
+        { key: uuid, value: 4 },
+        { key: String, value: 5 },
+      ], 'key'),
+      new Map<any, Item>([
+        [String, { key: String, value: 5 }],
+        [Object, { key: Object, value: 2 }],
+        [1, { key: 1, value: 3 }],
+        [uuid, { key: uuid, value: 4 }],
+      ])
+    )
   })
 })

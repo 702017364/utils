@@ -1,10 +1,22 @@
 import { hash8strings } from '@vope/utils'
-import { strictEqual } from 'assert'
+import { deepStrictEqual } from 'assert'
 
 describe('hash8strings()', () => { 
-  it('...', () => { 
-    const list = ['a', 'b']
+  it('default', () => { 
+    const uuid = Symbol()
 
-    strictEqual(1, hash8strings(list).b)
+    deepStrictEqual(
+      hash8strings([
+        'a',
+        1,
+        uuid,
+        'a',
+      ]),
+      {
+        a: 3,
+        1: 1,
+        [uuid]: 2,
+      }
+    )
   })
 })
