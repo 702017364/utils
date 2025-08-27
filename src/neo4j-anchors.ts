@@ -1,4 +1,4 @@
-import Neo4j from './neo4j'
+import type Neo4j from './neo4j'
 import { rotateRad } from './rotate/rad'
 
 interface IBox { 

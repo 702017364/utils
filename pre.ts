@@ -1,4 +1,4 @@
-import { BuildOptions, build } from 'esbuild'
+import { type BuildOptions, build } from 'esbuild'
 import { dependencies, devDependencies } from './package.json'
 
 const external: string[] = []

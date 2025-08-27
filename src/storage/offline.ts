@@ -1,6 +1,6 @@
 import localforage from 'localforage'
 import { isString } from 'lodash-es'
-import { SM4Mode_StringOutput, sm4 } from 'sm-crypto'
+import { type SM4Mode_StringOutput, sm4 } from 'sm-crypto'
 
 const NAME = process.env.npm_config_name
 

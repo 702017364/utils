@@ -1,9 +1,9 @@
-import { OfflineRequest, serializes } from '@examples/storage/offline/_utils'
+import { type OfflineRequest, serializes } from '@examples/storage/offline/_utils'
 import { cubeURLParams } from '@vope/utils'
 import { deepStrictEqual } from 'assert'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { Browser, HTTPRequest, executablePath, launch } from 'puppeteer'
+import { type Browser, executablePath, type HTTPRequest, launch } from 'puppeteer'
 
 describe('class OfflineStorage', async function () { 
   this.timeout(5e5)

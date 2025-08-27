@@ -1,5 +1,5 @@
-import { Equal, Expect, NotEqual } from '@type-challenges/utils'
-import { Dic, DicRollup } from '@vope/utils'
+import type { Equal, Expect, NotEqual } from '@type-challenges/utils'
+import { type Dic, DicRollup } from '@vope/utils'
 import { deepStrictEqual, strictEqual } from 'assert'
 
 describe('class DicRollup', () => { 

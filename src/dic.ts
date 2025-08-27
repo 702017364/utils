@@ -1,4 +1,4 @@
-import { IsNever, PartialRecord, Revise } from '@vope/types'
+import type { IsNever, PartialRecord, Revise } from '@vope/types'
 import { isFunction } from 'lodash-es'
 import { hash8json } from './convert/json'
 import { hash8strings } from './convert/strings'

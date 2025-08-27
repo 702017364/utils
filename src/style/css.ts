@@ -1,6 +1,6 @@
+import type { Properties, PropertiesHyphen } from 'csstype'
 import { isString } from 'lodash-es'
 import { isNull } from '../is/null'
-import { Properties, PropertiesHyphen } from 'csstype'
 
 export interface CSSProperties extends Properties<string | number>, PropertiesHyphen<string | number> { 
   [v: `--${string}`]: string | number | undefined

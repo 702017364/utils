@@ -1,4 +1,4 @@
-import { Revise } from '@vope/types'
+import type { Revise } from '@vope/types'
 import { isNumber, isString } from 'lodash-es'
 import { hash8json } from './convert/json'
 

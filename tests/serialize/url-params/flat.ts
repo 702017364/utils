@@ -1,6 +1,6 @@
 import { flatURLParams } from '@vope/utils'
 import { strictEqual } from 'assert'
-import { IParams, serializes } from './options'
+import { type IParams, serializes } from './options'
 
 describe('flatURLParams()', function () { 
   it('default', function () { 

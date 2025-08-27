@@ -1,4 +1,4 @@
-import { Point2Tuple } from '@vope/types'
+import type { Point2Tuple } from '@vope/types'
 import { rotateRad } from './rad'
 
 /**

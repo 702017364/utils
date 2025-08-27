@@ -1,4 +1,4 @@
-import { Revise } from '@vope/types'
+import type { Revise } from '@vope/types'
 
 interface Result<Data, Option> { 
   data: Data

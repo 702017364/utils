@@ -1,7 +1,7 @@
-import { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '@type-challenges/utils'
 import { cubeURLParams } from '@vope/utils'
 import { deepStrictEqual } from 'assert'
-import { F, G, IParams, serializes } from './options'
+import { type F, type G, type IParams, serializes } from './options'
 
 describe('cubeURLParams()', function () { 
   it('default', function () { 

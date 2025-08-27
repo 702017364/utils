@@ -1,4 +1,4 @@
-import { Serializes } from '@vope/utils'
+import type { Serializes } from '@vope/utils'
 
 export interface OfflineRequest { 
   size1: number

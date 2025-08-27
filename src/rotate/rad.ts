@@ -1,4 +1,4 @@
-import { Point2Tuple } from '@vope/types'
+import type { Point2Tuple } from '@vope/types'
 
 /**
  * 返回点被旋转指定弧度后新的位置

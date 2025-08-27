@@ -1,4 +1,4 @@
-import { Serializes, flatURLParams } from '../serialize/url-params'
+import { type Serializes, flatURLParams } from '../serialize/url-params'
 
 const rasterize = <T extends object>(data: T) => { 
   const params = new URLSearchParams()

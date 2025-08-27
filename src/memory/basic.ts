@@ -1,5 +1,5 @@
 import { hash8strings } from '../convert/strings'
-import { type Memory } from './type'
+import type { Memory } from './type'
 
 interface Config<Reactor> {
   /**

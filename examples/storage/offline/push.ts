@@ -1,6 +1,6 @@
 import { flatURLParams, isKey } from '@vope/utils'
 import { OfflineStorage } from '@vope/utils/storage'
-import { OfflineRequest, serializes } from './_utils'
+import { type OfflineRequest, serializes } from './_utils'
 
 interface Person { 
   name: string

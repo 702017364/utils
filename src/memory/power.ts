@@ -1,6 +1,6 @@
 import { deconPowersSum } from '../power/decon'
 import { MemoryBasic } from './basic'
-import { type Memory } from './type'
+import type { Memory } from './type'
 
 /**
  * 分类存储(基于2的n次幂之和构建唯一键进行存储)

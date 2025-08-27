@@ -1,5 +1,5 @@
-import { Equal } from '@type-challenges/utils'
-import { UnionToTuple } from '@vope/types'
+import type { Equal } from '@type-challenges/utils'
+import type { UnionToTuple } from '@vope/types'
 import { isString } from 'lodash-es'
 import { isKey } from '../is/key'
 
