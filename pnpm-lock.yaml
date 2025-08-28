@@ -15,8 +15,8 @@ importers:
         specifier: ^4.17.12
         version: 4.17.12
       '@vope/types':
-        specifier: ^1.1.3
-        version: 1.1.3
+        specifier: ^1.2.0
+        version: 1.2.0
       csstype:
         specifier: ^3.1.3
         version: 3.1.3
@@ -512,8 +512,8 @@ packages:
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
 
-  '@vope/types@1.1.3':
-    resolution: {integrity: sha512-B+hSm3VUq8UOeDhdX3HWxbOAmeS6WPfsMQORTgCfswkLrEfzLL07CCl3Vov5OZ5FVQVVWNWgKRCHf1FUpRIjpg==}
+  '@vope/types@1.2.0':
+    resolution: {integrity: sha512-B7qd8MZIQUXpROi+Yw45uAoZG0Bj7EY2G2Ctb1RooVO1vq0d2tjp9pkeneQfp4HtR+WSX8YuG/7ppV87qSVqsQ==}
     engines: {npm: '>=7.0.0'}
 
   agent-base@7.1.3:
@@ -1601,7 +1601,7 @@ snapshots:
       '@types/node': 22.13.5
     optional: true
 
-  '@vope/types@1.1.3':
+  '@vope/types@1.2.0':
     dependencies:
       '@type-challenges/utils': 0.1.1
 
