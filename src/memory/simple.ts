@@ -1,6 +1,5 @@
 import type { Assign } from '@vope/types'
-import { MemoryBasic } from './basic'
-import type { Memory } from './type'
+import { MemoryBasic, type Memory } from './basic'
 
 type Transform<T, V> = {
   [P in keyof T]: T[P] extends (...args: any) => any

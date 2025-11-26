@@ -1,33 +1,63 @@
 import { getEncoding } from '@vope/utils'
-import { strictEqual } from 'assert'
+import { deepStrictEqual } from 'assert'
 import iconv from 'iconv-lite'
 
-describe('getEncoding()', function () { 
+describe('getEncoding()', function () {
   const text = '*1*我是中国人*1*'
 
-  const equal = (type: string, addBOM?: boolean) => { 
-    const buffer = iconv.encode(text, type, { addBOM })
-    const { encoding } = getEncoding(buffer)
-    strictEqual(type, encoding)
-  }
+  it('识别各种编码格式', function () {
+    const testCases = [
+      {
+        buffer: iconv.encode(text, 'gbk'),
+        expected: 'gbk'
+      },
+      {
+        buffer: iconv.encode(text, 'utf-16le', { addBOM: true }),
+        expected: 'utf-16le'
+      },
+      {
+        buffer: iconv.encode(text, 'utf-16be', { addBOM: true }),
+        expected: 'utf-16be'
+      },
+      {
+        buffer: iconv.encode(text, 'utf-8'),
+        expected: 'utf-8'
+      },
+      {
+        buffer: iconv.encode(text, 'utf-8', { addBOM: true }),
+        expected: 'utf-8'
+      }
+    ]
 
-  it('GBK', function () { 
-    equal('gbk')
+    const actuals = testCases.map(({ buffer }) => getEncoding(buffer).encoding)
+    const expected = testCases.map(({ expected }) => expected)
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('UTF-16LE', function () { 
-    equal('utf-16le', true)
-  })
+  it('正确识别BOM和偏移量', function () {
+    const testCases = [
+      {
+        buffer: iconv.encode(text, 'utf-8', { addBOM: true }),
+        expected: { encoding: 'utf-8', offset: 3 }
+      },
+      {
+        buffer: iconv.encode(text, 'utf-16le', { addBOM: true }),
+        expected: { encoding: 'utf-16le', offset: 2 }
+      },
+      {
+        buffer: iconv.encode(text, 'utf-16be', { addBOM: true }),
+        expected: { encoding: 'utf-16be', offset: 2 }
+      },
+      {
+        buffer: iconv.encode(text, 'gbk'),
+        expected: { encoding: 'gbk', offset: 0 }
+      }
+    ]
 
-  it('UTF-16BE', function () { 
-    equal('utf-16be', true)
-  })
-
-  it('UTF-8', function () { 
-    equal('utf-8')
-  })
-
-  it('UTF-8 BOM', function () { 
-    equal('utf-8', true)
+    const actuals = testCases.map(({ buffer }) => getEncoding(buffer))
+    const expected = testCases.map(({ expected }) => expected)
+    
+    deepStrictEqual(actuals, expected)
   })
 })

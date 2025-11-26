@@ -1,9 +1,9 @@
 import type { Equal } from '@type-challenges/utils'
 import type { GetGivenProps } from '@vope/types'
 import { hash8strings } from './convert/strings'
+import type { Memory } from './memory/basic'
 import { MemoryList } from './memory/list'
 import { MemorySimple } from './memory/simple'
-import type { Memory } from './memory/type'
 
 interface Config<INode extends object, IEdge extends object> { 
   /**

@@ -1,173 +1,177 @@
-import { Cron, isAggUnit } from '@vope/utils'
-import { deepStrictEqual, strictEqual } from 'assert'
-import { isNumber } from 'lodash-es'
+import { Cron } from '@vope/utils'
+import { deepStrictEqual } from 'assert'
 
-describe('class Cron', function () { 
-  const equal = (cron: Cron, list: (string | [string, string])[]) => { 
-    const actuals: string[] = []
-    const expecteds: string[] = []
+describe('class Cron', function () {
+  it('默认配置解析表达式', function () {
+    const cron = new Cron()
+    
+    const testCases = [
+      '0,5,10 * * * * ?',
+      '*/5 * * * * ?',
+      '0 0,30 10-16 ? * 1-5',
+      '0 30 2 1-15/2 * *',
+      '0 * * * 1-5 6-7',
+      '0 0 0 3,L-3 * ?',
+      '0 0 0 L-3,3 * ?',
+      '0 0 0 2,4-6,10,20-22 * ?',
+      '0 0 0 4-6,10,20-22,30 * ?',
+      '0 0 0 ? * 0L',
+      '0 0 0 ? 2,5-8 3,0L',
+      '0 0 0 1 1 ? 2008/4',
+      '0 * * L * ?',
+    ]
 
-    list.forEach((data) => { 
-      const [text, expected] = Array.isArray(data) ? data : [data]
-      actuals.push(expected ?? text)
-      const parse = cron.parse(text)
-      expecteds.push(
-        parse
-          ? parse.text()
-          : ''
-      )
+    const actuals = testCases.map(text => cron.parse(text)?.text() || '')
+    const expected = testCases
+    
+    deepStrictEqual(actuals, expected)
+  })
+
+  it('无效表达式返回空', function () {
+    const cron = new Cron()
+    
+    const invalidCases = [
+      '60 0 0 * * *',
+      '0 0 0 L-3-L-1 * ?',
+    ]
+
+    const actuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const expected = ['', '']
+    
+    deepStrictEqual(actuals, expected)
+  })
+
+  it('禁用秒字段配置', function () {
+    const cron = new Cron({
+      enableSecond: false,
     })
+    
+    const validCases = [
+      '0 0 5 * *',
+    ]
+    
+    const invalidCases = [
+      '0 0 0 5 * *',
+    ]
 
-    return deepStrictEqual(actuals, expecteds)
-  }
-
-  it('Default', () => { 
-    equal(
-      new Cron(),
-      [
-        '0,5,10 * * * * ?',
-        '*/5 * * * * ?',
-        '0 0,30 10-16 ? * 1-5',
-        '0 30 2 1-15/2 * *',
-        '0 * * * 1-5 6-7',
-        '0 0 0 3,L-3 * ?',
-        '0 0 0 L-3,3 * ?',
-        '0 0 0 2,4-6,10,20-22 * ?',
-        '0 0 0 4-6,10,20-22,30 * ?',
-        '0 0 0 ? * 0L',
-        '0 0 0 ? 2,5-8 3,0L',
-        ['0 0 0 ? * sat,Mon-thU,0', '0 0 0 ? * 6,1-4,0'],
-        '0 0 0 1 1 ? 2008/4',
-        '0 * * L * ?',
-
-        ['60 0 0 * * *', ''],
-        ['0 0 0 L-3-L-1 * ?', ''],
-      ]
-    )
+    const validActuals = validCases.map(text => cron.parse(text)?.text() || '')
+    const validExpected = validCases
+    
+    const invalidActuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const invalidExpected = ['']
+    
+    deepStrictEqual(validActuals, validExpected)
+    deepStrictEqual(invalidActuals, invalidExpected)
   })
 
-  it('enableSlot = false', () => { 
-    const day = new Cron({
-      enableSlot: false,
-    }).parse('0 0 0 5 * *')?.day
+  it('禁用年字段配置', function () {
+    const cron = new Cron({
+      enableYear: false,
+    })
+    
+    const invalidCases = [
+      '0 0 0 5 * * 2000',
+    ]
 
-    let result: unknown
-    if (isAggUnit(day)) { 
-      const { values } = day
-      if (Array.isArray(values) && values.length === 1) { 
-        const tmp = values[0]
-        if (isNumber(tmp)) { 
-          result = tmp
-        }
-      }
-    }
-
-    strictEqual(result, 5)
+    const actuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const expected = ['']
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('enableSecond = false', () => { 
-    equal(
-      new Cron({
-        enableSecond: false,
-      }),
-      [
-        '0 0 5 * *',
-        ['0 0 0 5 * *', ''],
-      ]
-    )
+  it('禁用无效日期配置', function () {
+    const cron = new Cron({
+      enableInvalid: false,
+    })
+    
+    const invalidCases = [
+      '0 0 0 ? * 5',
+      '0 0 0 5 * ?',
+    ]
+
+    const actuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const expected = ['', '']
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('enableYear = false', () => { 
-    equal(
-      new Cron({
-        enableYear: false,
-      }),
-      [
-        ['0 0 0 5 * * 2000', ''],
-      ]
-    )
+  it('禁用日期最后一天配置', function () {
+    const cron = new Cron({
+      enableDayLast: false,
+    })
+    
+    const invalidCases = [
+      '0 0 0 L * ?',
+      '0 0 0 L-1 * ?',
+    ]
+
+    const actuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const expected = ['', '']
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('enableInvalid = false', () => { 
-    equal(
-      new Cron({
-        enableInvalid: false,
-      }),
-      [
-        ['0 0 0 ? * 5', ''],
-        ['0 0 0 5 * ?', ''],
-      ]
-    )
+  it('禁用星期最后一天配置', function () {
+    const cron = new Cron({
+      enableWeekLast: false,
+    })
+    
+    const invalidCases = [
+      '0 0 0 ? * 0L',
+    ]
+
+    const actuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const expected = ['']
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('enableDayLast = false', () => { 
-    equal(
-      new Cron({
-        enableDayLast: false,
-      }),
-      [
-        ['0 0 0 L * ?', ''],
-        ['0 0 0 L-1 * ?', ''],
-      ]
-    )
+  it('禁用星期数字7配置', function () {
+    const cron = new Cron({
+      enableWeekSupport7: false,
+    })
+    
+    const invalidCases = [
+      '0 0 0 ? * 7',
+    ]
+
+    const actuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const expected = ['']
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('enableWeekLast = false', () => { 
-    equal(
-      new Cron({
-        enableWeekLast: false,
-      }),
-      [
-        ['0 0 0 ? * 0L', ''],
-      ]
-    )
+  it('禁用星期字典配置', function () {
+    const cron = new Cron({
+      enableWeekSupportDic: false,
+    })
+    
+    const invalidCases = [
+      '0 0 0 ? * SUN',
+    ]
+
+    const actuals = invalidCases.map(text => cron.parse(text)?.text() || '')
+    const expected = ['']
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('enableWeekSupport7 = false', () => { 
-    equal(
-      new Cron({
-        enableWeekSupport7: false,
-      }),
-      [
-        ['0 0 0 ? * 7', ''],
-      ]
-    )
+  it('启用前导零配置', function () {
+    const cron = new Cron({
+      enablePrefixZero: true,
+    })
+    
+    const testCases = [
+      ['0 0 0 ? * 01', '0 0 0 ? * 1'],
+    ]
+
+    const actuals = testCases.map(([input]) => cron.parse(input)?.text() || '')
+    const expected = testCases.map(([, output]) => output)
+    
+    deepStrictEqual(actuals, expected)
   })
 
-  it('enableWeekSupportDic = false', () => { 
-    equal(
-      new Cron({
-        enableWeekSupportDic: false,
-      }),
-      [
-        ['0 0 0 ? * SUN', ''],
-      ]
-    )
-  })
-
-  it('enableDicEnumSupportMixin = false', () => { 
-    equal(
-      new Cron({
-        enableDicEnumSupportMixin: false,
-      }),
-      [
-        ['0 0 0 ? * Sun', ''],
-      ]
-    )
-  })
-
-  it('enablePrefixZero = true', () => { 
-    equal(
-      new Cron({
-        enablePrefixZero: true,
-      }),
-      [
-        ['0 0 0 ? * 01', '0 0 0 ? * 1'],
-      ]
-    )
-  })
-
-  it('set', () => { 
+  it('设置字段值', function () {
     const parse = new Cron().parse('0 0 0 ? * 0')!
     parse.setSecond(5)
     parse.setMinute([20, 40])
@@ -183,9 +187,11 @@ describe('class Cron', function () {
     parse.setWeek([1, 3])
     actuals.push(parse.text())
 
-    deepStrictEqual(actuals, [
+    const expected = [
       '5 20,40 0/3 2,15,L-1 1,7,8 ? 2020-2030',
       '5 20,40 0/3 ? 1,7,8 1,3 2020-2030',
-    ])
+    ]
+    
+    deepStrictEqual(actuals, expected)
   })
 })

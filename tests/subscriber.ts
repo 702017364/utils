@@ -1,56 +1,93 @@
 import { Subscriber } from '@vope/utils'
-import { strictEqual } from 'assert'
+import { deepStrictEqual } from 'assert'
 
-describe('Subscriber', function () { 
-  it('多次注册', function () { 
+describe('Subscriber', function () {
+  it('基本订阅和触发功能', function () {
     const subscriber = new Subscriber<{
       test(value: string): void
     }>()
-    let str = ''
+    
+    let results: string[] = []
     subscriber
-      .$on('test', (value) => str += value)
-      .$on('test', (value) => str += value)
-      .$emit('test', 'a')
-    strictEqual(str, 'aa')
+      .$on('test', (value) => results.push(`first:${value}`))
+      .$on('test', (value) => results.push(`second:${value}`))
+    
+    subscriber.$emit('test', 'a')
+    subscriber.$emit('test', 'b')
+    
+    const expected = [
+      'first:a',
+      'second:a',
+      'first:b',
+      'second:b'
+    ]
+    
+    deepStrictEqual(results, expected)
   })
 
-  it('多次触发', function () { 
+  it('一次性订阅功能', function () {
     const subscriber = new Subscriber<{
       test(value: string): void
     }>()
-    let str = ''
+    
+    let results: string[] = []
     subscriber
-      .$on('test', (value) => str += value)
-      .$emit('test', 'a')
-      .$emit('test', 'b')
-    strictEqual(str, 'ab')
+      .$on('test', (value) => results.push(`permanent:${value}`))
+      .$once('test', (value) => results.push(`once:${value}`))
+    
+    subscriber.$emit('test', 'a')
+    subscriber.$emit('test', 'b')
+    
+    const expected = [
+      'permanent:a',
+      'once:a',
+      'permanent:b'
+    ]
+    
+    deepStrictEqual(results, expected)
   })
 
-  it('多次注册且多次触发', function () { 
+  it('取消订阅功能', function () {
     const subscriber = new Subscriber<{
       test(value: string): void
     }>()
-    let str = ''
+    
+    let results: string[] = []
+    const permanentListener = (value: string) => results.push(`permanent:${value}`)
+    const removableListener = (value: string) => results.push(`removable:${value}`)
+    
     subscriber
-      .$on('test', (value) => str += value)
-      .$on('test', (value) => str += value)
-      .$emit('test', 'a')
-      .$emit('test', 'b')
-    strictEqual(str, 'aabb')
+      .$on('test', permanentListener)
+      .$on('test', removableListener)
+    
+    subscriber.$emit('test', 'a')
+    subscriber.$off('test', removableListener)
+    subscriber.$emit('test', 'b')
+    subscriber.$off('test')
+    subscriber.$emit('test', 'c')
+    
+    const expected = [
+      'permanent:a',
+      'removable:a',
+      'permanent:b'
+    ]
+    
+    deepStrictEqual(results, expected)
   })
 
-  it('注册n >> 触发n >> 注销1 >> 触发n >> 注销n >> 触发n', function () { 
+  it('复杂订阅场景', function () {
     const subscriber = new Subscriber<{
       name(value: string): void
       age(value: number): void
       sex(value: 0 | 1): void
     }>()
-    const list: string[] = []
-
+    
+    const results: string[] = []
     subscriber
-      .$on('name', (value) => list.push('姓名：' + value))
-      .$on('age', (value) => list.push('年龄：' + value + '岁'))
-      .$on('sex', (value) => list.push('性别：' + (value === 1 ? '男' : '女')))
+      .$on('name', (value) => results.push('姓名：' + value))
+      .$on('age', (value) => results.push('年龄：' + value + '岁'))
+      .$on('sex', (value) => results.push('性别：' + (value === 1 ? '男' : '女')))
+      .$once('name', (value) => results.push('临时姓名：' + value))
 
     subscriber
       .$emit('name', '张三')
@@ -59,43 +96,23 @@ describe('Subscriber', function () {
     
     subscriber.$off('age')
     
-    list.push('|')
+    results.push('|')
 
     subscriber
       .$emit('name', '李四')
       .$emit('age', 34)
       .$emit('sex', 0)
     
-    subscriber
-      .$off('name')
-      .$off('age')
-      .$off('sex')
+    const expected = [
+      '姓名：张三',
+      '临时姓名：张三',
+      '年龄：20岁',
+      '性别：男',
+      '|',
+      '姓名：李四',
+      '性别：女'
+    ]
     
-    subscriber
-      .$emit('name', '王五')
-      .$emit('age', 40)
-      .$emit('sex', 1)
-    
-    const str = list.join(',')
-    
-    strictEqual(str, '姓名：张三,年龄：20岁,性别：男,|,姓名：李四,性别：女')
-  })
-
-  it('once', function () { 
-    const subscriber = new Subscriber<{
-      test(): void
-    }>()
-
-    const list: number[] = []
-    subscriber.$on('test', () => list.push(1))
-    subscriber.$once('test', () => list.push(2))
-    subscriber.$once('test', () => list.push(3))
-    subscriber.$on('test', () => list.push(4))
-    subscriber.$emit('test')
-    subscriber.$emit('test')
-    subscriber.$once('test', () => list.push(5))
-    subscriber.$emit('test')
-    subscriber.$emit('test')
-    strictEqual(list.join(''), '12341414514')
+    deepStrictEqual(results, expected)
   })
 })

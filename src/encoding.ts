@@ -28,6 +28,7 @@ type Encode<T> = Extract<T[keyof T], string>
  * 根据文件内容判断文件的编码
  * @param uint 文件内容Uint8Array格式
  * @param limit 用于约束GBK和utf_8的判定上限
+ * @description 目前支持utf-8、utf-16le、utf-16be、gbk四种编码
  */
 export const getEncoding = (uint: Uint8Array, limit = 1024) => {
   let encoding!: Encode<typeof Encodes>

@@ -1,19 +1,61 @@
+import type { GetGivenProps } from '@vope/types'
 import { hash8strings } from '../convert/strings'
-import type { Memory } from './type'
 
-interface Config<Reactor> {
+const PUSH = 1
+const RESET = 2
+const DELETE = 0
+
+export namespace Memory { 
+  export type Type = string | number | symbol
+
+  export type Pitch<Data, Type> = (
+    Data extends object
+      ? GetGivenProps<Data, Type>
+      : never
+  ) | ((data: Data) => Type)
+
+  export interface Emit<T> { 
+    (type: typeof PUSH, data: T): void
+    (type: typeof RESET, data: T[]): void
+    (type: typeof DELETE, index: number): void
+  }
+}
+
+interface Mount<T> { 
   /**
-   * 定义数据如何挂载到存储中
    * @param index 当前存入数据对应的角标
    * @param reactor 当前存入数据对应存储单元
    */
-  mount(index: number, reactor?: Reactor): Reactor
+  (index: number, reactor?: T): T
+}
+
+interface Reflex<T> { 
+  /**
+   * @param reactor 存储单元
+   */
+  (reactor: T): number[]
+}
+
+interface Config<T, Reactor> {
+  /**
+   * 定义数据如何挂载到存储中
+   */
+  mount: Mount<Reactor>
+  
   /**
    * 定义存储单元和存储关系
    * @param reactor 存储单元
    */
-  reflex(reactor: Reactor): number[]
+  reflex: Reflex<Reactor>
+
+  /**
+   * 存储变化触发(用于同步数据)
+   */
+  emit?: Memory.Emit<T>
 }
+
+const LIST_SYMBOL = Symbol()
+const MEMORYS_SYMBOL = Symbol()
 
 /**
  * 分类存储(通过继承，可用于拓展存储方式)
@@ -23,26 +65,32 @@ export class MemoryBasic<
   Reactor,
   Type extends Memory.Type
 > {
-  #mount: Config<Reactor>['mount']
-  #reflex: Config<Reactor>['reflex']
+  static readonly PUSH = PUSH
+  static readonly RESET = RESET
+  static readonly DELETE = DELETE
+
+  #mount: Mount<Reactor>
+  #reflex: Reflex<Reactor>
+  #emit?: Memory.Emit<T>
   
-  protected list: T[] = []
-  protected memorys = new Map<Type, Reactor>()
+  protected [LIST_SYMBOL]: T[] = []
+  protected [MEMORYS_SYMBOL] = new Map<Type, Reactor>()
 
   /**
    * 返回存储长度
    */
   get size() { 
-    return this.list.length
+    return this[LIST_SYMBOL].length
   }
 
   /**
-   * @param key 用于对数据进行分类的key
-   * @param config 
+   * @param key     用于对数据进行分类的key
+   * @param config  配置项
    */
-  constructor(protected key: Memory.Pitch<T, Type>, config: Config<Reactor>) { 
+  constructor(protected key: Memory.Pitch<T, Type>, config: Config<T, Reactor>) { 
     this.#mount = config.mount
     this.#reflex = config.reflex
+    this.#emit = config.emit
   }
 
   protected getType(data: T) {
@@ -50,14 +98,19 @@ export class MemoryBasic<
     return typeof key === 'function' ? key(data) : data[key] as Type
   }
 
-  push(...list: T[]) { 
-    const { memorys } = this
-    list.forEach((data) => {
+  /**
+   * 添加数据
+   */
+  push(...values: T[]) { 
+    const memorys = this[MEMORYS_SYMBOL]
+    const list = this[LIST_SYMBOL]
+    values.forEach((data) => {
       const type = this.getType(data)
       const memory = memorys.get(type)
-      const index = this.list.push(data) - 1
+      const index = list.push(data) - 1
       const result = this.#mount(index, memory)
       memory === result || memorys.set(type, result)
+      this.#emit?.(PUSH, data)
     })
     return this
   }
@@ -66,18 +119,18 @@ export class MemoryBasic<
    * 返回位于指定索引处的项
    */
   at(index: number) { 
-    const { list } = this
+    const list = this[LIST_SYMBOL]
     if (index < 0) { 
       index += list.length
     }
-    return this.list.at(index)
+    return list.at(index)
   }
 
   /**
    * 遍历所有存储数据(按入栈顺序)
    */
   forEach(callback: (data: T, index: number) => void) { 
-    this.list.forEach(callback)
+    this[LIST_SYMBOL].forEach(callback)
     return this
   }
 
@@ -85,7 +138,8 @@ export class MemoryBasic<
    * 遍历所有存储类型
    */
   forType(callback: (data: T[], type: Type) => void) { 
-    const { memorys, list } = this
+    const memorys = this[MEMORYS_SYMBOL]
+    const list = this[LIST_SYMBOL]
     for (const [type, memory] of memorys) {
       const caches = this.#reflex(memory).map((index) => list[index])
       callback(caches, type)
@@ -97,45 +151,46 @@ export class MemoryBasic<
    * some(按入栈顺序)
    */
   some(callback: (data: T, index: number) => boolean) { 
-    return this.list.some(callback)
+    return this[LIST_SYMBOL].some(callback)
   }
 
   /**
    * map(按入栈顺序)
    */
   map<V>(callback: (data: T, index: number) => V) { 
-    return this.list.map(callback)
+    return this[LIST_SYMBOL].map(callback)
   }
 
   /**
    * reduce(按入栈顺序)
    */
   reduce<V>(callback: (previousValue: V, currentValue: T, currentIndex: number) => V, initialValue: V) { 
-    return this.list.reduce(callback, initialValue)
+    return this[LIST_SYMBOL].reduce(callback, initialValue)
   }
 
   /**
    * 判断存储是否包含指定类型
    */
   includes(type: Type) { 
-    return this.memorys.has(type)
+    return this[MEMORYS_SYMBOL].has(type)
   }
 
   /**
    * 获取指定类型存储数据
    */
   get(type: Type) {
-    const memory = this.memorys.get(type)
+    const memory = this[MEMORYS_SYMBOL].get(type)
     return memory === void 0
       ? null
-      : this.#reflex(memory).map((count) => this.list[count])
+      : this.#reflex(memory).map((count) => this[LIST_SYMBOL][count])
   }
 
   /**
    * 删除指定存储数据
    */
   delete(data: T) { 
-    const { memorys, list } = this
+    const memorys = this[MEMORYS_SYMBOL]
+    const list = this[LIST_SYMBOL]
     let index = -1
     if (!list.some((value, i) => {
       if (data === value) {
@@ -171,6 +226,7 @@ export class MemoryBasic<
         memorys.set(type, reactor!)
       }
     }
+    this.#emit?.(DELETE, index)
     return this
   }
 
@@ -178,19 +234,20 @@ export class MemoryBasic<
    * 删除指定类型存储数据
    */
   deleteType(type: Type) { 
-    const { memorys, list } = this
+    const memorys = this[MEMORYS_SYMBOL]
+    const list = this[LIST_SYMBOL]
     if (!memorys.has(type)) return this
     const local = hash8strings(this.#reflex(memorys.get(type)!))
-    const Memory = this.constructor as new (...args: ConstructorParameters<typeof MemoryBasic<T, Reactor, Type>>) => MemoryBasic<T, Reactor, Type>
-    const imitator = new Memory(this.key, {
+    const imitator = new MemoryBasic(this.key, {
       mount: this.#mount,
       reflex: this.#reflex,
     })
     list.forEach((data, index) => { 
       index in local || imitator.push(data)
     })
-    this.list = imitator.list
-    this.memorys = imitator.memorys
+    const tmp = this[LIST_SYMBOL] = imitator[LIST_SYMBOL]
+    this[MEMORYS_SYMBOL] = imitator[MEMORYS_SYMBOL]
+    this.#emit?.(RESET, tmp.slice(0))
     return this
   }
 
@@ -198,7 +255,8 @@ export class MemoryBasic<
    * 清理存储
    */
   clear() { 
-    this.list = []
-    this.memorys.clear()
+    this[LIST_SYMBOL] = []
+    this[MEMORYS_SYMBOL].clear()
+    this.#emit?.(RESET, [])
   }
 }

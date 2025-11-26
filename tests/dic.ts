@@ -1,6 +1,6 @@
 import type { Equal, Expect, NotEqual } from '@type-challenges/utils'
 import { type Dic, DicRollup } from '@vope/utils'
-import { deepStrictEqual, strictEqual } from 'assert'
+import { deepStrictEqual } from 'assert'
 
 describe('class DicRollup', () => { 
   type Value = 0 | 1 | 2 | 3 | 4
@@ -51,58 +51,62 @@ describe('class DicRollup', () => {
     Expect<NotEqual<DicRollup.Mode<typeof dic>, string>>,
   ]
 
-  it('includes', () => { 
-    deepStrictEqual([
+  it('处理各种字典操作', () => {
+    // includes 测试
+    const includesTest = [
       dic.includes(0),
       dic.includes(5),
-    ], [true, false])
-  })
-
-  it('label', () => { 
-    debugger
-    deepStrictEqual([
+    ]
+    
+    // label 测试
+    const labelTest = [
       dic.label(1),
       dic.label(1, 'test')
-    ], ['1', '11'])
-  })
-
-  it('get', () => { 
-    strictEqual(dic.get(0, 'name'), 'zero')
-  })
-
-  it('map', () => {
-    deepStrictEqual(
-      dic.map((data) => data.value + 1),
-      [1, 2, 3, 4, 5]
-    )
-  })
-
-  it('map', () => {
-    strictEqual(
-      dic.reduce((text, data) => text + data.label, ''),
-      '01234'
-    )
-  })
-
-  it('copy', () => { 
+    ]
+    
+    // get 测试
+    const getTest = dic.get(0, 'name')
+    
+    // map 测试
+    const mapTest = dic.map((data) => data.value + 1)
+    
+    // reduce 测试
+    const reduceTest = dic.reduce((text, data) => text + data.label, '')
+    
+    // copy 测试
     const tmp = dic.copy([1, 3, 4], {
       customLabel: {
         test1: (data) => data.name,
       },
     })
+    const copyTest = tmp.map((data) => tmp.label(data.value, 'test1'))
+    
+    // copyAnti 测试
+    const tmp1 = dic.copyAnti([1, 3, 4])
+    const copyAntiTest = tmp1.map((data) => tmp1.label(data.value, 'test'))
 
-    deepStrictEqual(
-      tmp.map((data) => tmp.label(data.value, 'test1')),
-      ['one', 'three', 'four']
-    )
-  })
+    const actual = [
+      ...includesTest,
+      ...labelTest,
+      getTest,
+      mapTest,
+      reduceTest,
+      copyTest,
+      copyAntiTest
+    ]
 
-  it('copyAnti', () => { 
-    const tmp = dic.copyAnti([1, 3, 4])
-
-    deepStrictEqual(
-      tmp.map((data) => tmp.label(data.value, 'test')),
+    const expected = [
+      true,
+      false,
+      '1',
+      '11',
+      'zero',
+      [1, 2, 3, 4, 5],
+      '01234',
+      ['one', 'three', 'four'],
       ['00', '22']
-    )
+    ]
+
+    deepStrictEqual(actual, expected)
   })
 })

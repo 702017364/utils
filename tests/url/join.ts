@@ -1,28 +1,36 @@
 import { joinPaths } from '@vope/utils'
-import { strictEqual } from 'assert'
+import { deepStrictEqual } from 'assert'
 
 describe('joinPaths()', () => { 
-  it('Empty params', () => { 
-    strictEqual('', joinPaths())
-  })
-
-  it('Only one params', () => { 
-    strictEqual('abc', joinPaths('abc'))
-  })
-
-  it('Two params', function () { 
-    strictEqual('abc/e', joinPaths('abc', 'e'))
-  })
-
-  it('Multiple params', function () { 
-    strictEqual('abc/e/f', joinPaths('abc', 'e', 'f'))
-  })
-
-  it('With /', function () { 
-    strictEqual('/abc/a/b/c', joinPaths('/abc/', '/a', '/b/', 'c'))
-  })
-  
-  it('With http://', function () { 
-    strictEqual('http://abc/e/f/', joinPaths('http://abc', 'e/', 'f/'))
+  it('路径拼接', () => { 
+    const inputs = [
+      [],
+      ['abc'],
+      ['abc', 'e'],
+      ['abc', 'e', 'f'],
+      ['/abc/', '/a', '/b/', 'c'],
+      ['http://abc', 'e/', 'f/'],
+      ['https://example.com', 'api', 'v1/'],
+      ['path1/', '/path2', '//path3'],
+      ['a', 'b', 'c', 'd', 'e'],
+      ['single']
+    ]
+    
+    const expected = [
+      '',
+      'abc',
+      'abc/e',
+      'abc/e/f',
+      '/abc/a/b/c',
+      'http://abc/e/f/',
+      'https://example.com/api/v1/',
+      'path1/path2/path3',
+      'a/b/c/d/e',
+      'single'
+    ]
+    
+    const actual = inputs.map(args => joinPaths(...args))
+    
+    deepStrictEqual(actual, expected)
   })
 })

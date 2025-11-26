@@ -61,7 +61,7 @@ export default class Subscriber<T extends SModel> {
           listeners[name].splice(index, 1)
           return true
         }
-      }) && once[name].some((value, index) => {
+      }) && once[name]?.some((value, index) => {
         if (value === count) {
           listeners[name].splice(index, 1)
           return true
