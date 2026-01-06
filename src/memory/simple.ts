@@ -26,11 +26,12 @@ export class MemorySimple<T, Type extends Memory.Type> implements Basic<T, numbe
     return this.#memory.size
   }
 
-  constructor(key: Memory.Pitch<T, Type>) { 
+  constructor(key: Memory.Pitch<T, Type>, emit?: Memory.Emit<T>) { 
     this.#key = key
     this.#memory = new MemoryBasic<T, number, Type>(key, {
       mount: (index) => index,
       reflex: (reactor) => [reactor],
+      emit,
     })
   }
 
