@@ -9,9 +9,11 @@ type Raws<Primary extends string, Status extends string, Origin extends { [key i
   [P in Status]: Revise<Origin, Primary, P>
 }
 
-type GetStatus<T> = T extends Union<any, any, any, any, any, infer S>
-  ? S
-  : never
+export namespace Union { 
+  export type Status<T> = T extends Union<any, any, any, any, any, infer S>
+    ? S
+    : never
+}
 
 /**
  * 数据联合(用于需要对加入的数据进行智能提示)
@@ -58,7 +60,7 @@ export class Union<
   /**
    * 从已有的联合中拷贝数据
    */
-  clone<T extends Union<Primary, string, Origin, Data, Option>, const P extends Exclude<GetStatus<T> & Member, Status>>(target: T, key: P | P[]) { 
+  clone<T extends Union<Primary, string, Origin, Data, Option>, const P extends Exclude<Union.Status<T> & Member, Status>>(target: T, key: P | P[]) { 
     const { data, options } = target
     const keys = Array.isArray(key)
       ? key

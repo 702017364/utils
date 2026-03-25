@@ -124,7 +124,7 @@ describe('class Union', function () {
   })
 
   it('从其他Union克隆单个元素', function () {
-    const sourceUnion = new Union<'prop', 'address1' | 'address2' | 'address3', VRule, IData, Rule[]>('prop', formatter)
+    const sourceUnion = new Union<'prop', 'address1' | 'address2' | 'address3' | 'address4', VRule, IData, Rule[]>('prop', formatter)
       .add({
         label: 'Address 1',
         prop: 'address1',
