@@ -158,6 +158,113 @@ describe('FlatTree', function () {
     })
   })
 
+  describe('getSub 方法', function () {
+    it('获取单个子节点', function () {
+      const data: TreeNode[] = [
+        { id: '1', label: 'Root' },
+        { id: '2', label: 'Child', pid: '1' }
+      ]
+      
+      const tree = new FlatTree({
+        key: 'id',
+        origin: data,
+        sup: 'pid'
+      })
+      
+      const children = tree.getSub('1')
+      
+      strictEqual(children?.length, 1)
+      strictEqual(children![0].id, '2')
+      strictEqual(children![0].label, 'Child')
+    })
+
+    it('获取多个子节点', function () {
+      const data: TreeNode[] = [
+        { id: '1', label: 'Root' },
+        { id: '2', label: 'Child1', pid: '1' },
+        { id: '3', label: 'Child2', pid: '1' },
+        { id: '4', label: 'Child3', pid: '1' }
+      ]
+      
+      const tree = new FlatTree({
+        key: 'id',
+        origin: data,
+        sup: 'pid'
+      })
+      
+      const children = tree.getSub('1')
+      
+      strictEqual(children?.length, 3)
+      strictEqual(children![0].id, '2')
+      strictEqual(children![1].id, '3')
+      strictEqual(children![2].id, '4')
+    })
+
+    it('没有子节点时返回空数组', function () {
+      const data: TreeNode[] = [
+        { id: '1', label: 'Root' },
+        { id: '2', label: 'Child', pid: '1' }
+      ]
+      
+      const tree = new FlatTree({
+        key: 'id',
+        origin: data,
+        sup: 'pid'
+      })
+      
+      const children = tree.getSub('2')
+      
+      strictEqual(children, undefined)
+    })
+
+    it('获取不存在的节点的子节点返回 undefined', function () {
+      const tree = new FlatTree<'id', TreeNode, 'pid'>({
+        key: 'id',
+        origin: [],
+        sup: 'pid'
+      })
+      
+      const children = tree.getSub('non-existent')
+      
+      strictEqual(children, undefined)
+    })
+
+    it('使用 callback 回调函数处理子节点', function () {
+      const data: TreeNode[] = [
+        { id: '1', label: 'Root' },
+        { id: '2', label: 'Child1', pid: '1' },
+        { id: '3', label: 'Child2', pid: '1' }
+      ]
+      
+      const tree = new FlatTree({
+        key: 'id',
+        origin: data,
+        sup: 'pid'
+      })
+      
+      const processedIds: string[] = []
+      const children = tree.getSub('1', (node) => {
+        processedIds.push(node.id)
+      })
+      
+      strictEqual(children?.length, 2)
+      strictEqual(processedIds.length, 2)
+      deepStrictEqual(processedIds, ['2', '3'])
+    })
+
+    it('空树的 getSub 返回 undefined', function () {
+      const tree = new FlatTree<'id', TreeNode, 'pid'>({
+        key: 'id',
+        origin: [],
+        sup: 'pid'
+      })
+      
+      const children = tree.getSub('1')
+      
+      strictEqual(children, undefined)
+    })
+  })
+
   describe('has 方法', function () {
     it('检查存在的节点', function () {
       const tree = new FlatTree({

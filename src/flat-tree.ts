@@ -193,6 +193,22 @@ export class FlatTree<K extends string, T extends { [P in K]: Value } & { [P in 
   }
 
   /**
+   * 获取子级节点
+   */
+  getSub(value: Value, callback?: (data: T) => void) { 
+    const { memory } = this
+    const tmp = this.downs.get(value)
+    if (!tmp) return
+    const list: T[] = []
+    for (const id of tmp) { 
+      const data = memory.get(id)!
+      callback?.(data)
+      list.push(data)
+    }
+    return list
+  }
+
+  /**
    * 是否含有节点
    */
   has(value: Value) { 
@@ -217,6 +233,7 @@ export class FlatTree<K extends string, T extends { [P in K]: Value } & { [P in 
 
   /**
    * 查询节点
+   * @param callback 节点回调，返回false则停止查询
    * @param mode 遍历模式
    */
   some(callback: (data: T) => boolean, mode?: FlatTree.Mode) { 
