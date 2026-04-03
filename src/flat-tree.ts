@@ -194,10 +194,13 @@ export class FlatTree<K extends string, T extends { [P in K]: Value } & { [P in 
 
   /**
    * 获取子级节点
+   * @description 当value === null时则获取所有顶级节点
    */
-  getSub(value: Value, callback?: (data: T) => void) { 
+  getSub(value: Value | null, callback?: (data: T) => void) { 
     const { memory } = this
-    const tmp = this.downs.get(value)
+    const tmp = value === null
+      ? this.list
+      : this.downs.get(value)
     if (!tmp) return
     const list: T[] = []
     for (const id of tmp) { 

@@ -200,7 +200,7 @@ describe('FlatTree', function () {
       strictEqual(children![2].id, '4')
     })
 
-    it('没有子节点时返回空数组', function () {
+    it('没有子节点时返回 undefined', function () { 
       const data: TreeNode[] = [
         { id: '1', label: 'Root' },
         { id: '2', label: 'Child', pid: '1' }
@@ -262,6 +262,29 @@ describe('FlatTree', function () {
       const children = tree.getSub('1')
       
       strictEqual(children, undefined)
+    })
+
+    it('参数为 null 时获取所有顶级节点', function () { 
+      const data: TreeNode[] = [
+        { id: '1', label: 'Root1' },
+        { id: '2', label: 'Child1', pid: '1' },
+        { id: '3', label: 'Root2' },
+        { id: '4', label: 'Child1-1', pid: '2' },
+        { id: '5', label: 'Root3' }
+      ]
+      
+      const tree = new FlatTree({
+        key: 'id',
+        origin: data,
+        sup: 'pid'
+      })
+      
+      const topLevelNodes = tree.getSub(null)
+      
+      strictEqual(topLevelNodes?.length, 3)
+      strictEqual(topLevelNodes![0].id, '1')
+      strictEqual(topLevelNodes![1].id, '3')
+      strictEqual(topLevelNodes![2].id, '5')
     })
   })
 
