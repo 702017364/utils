@@ -3,6 +3,6 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
-    "shims.env.d.ts"
+    "shime.env.d.ts"
   ]
 }

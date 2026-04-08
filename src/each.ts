@@ -50,3 +50,39 @@ export const forDfsEach = <T>(
     result === void 0 || reverseMergeIn(result, stack)
   }
 }
+
+const mergeIns = <T>(from: T[] | Set<T>, asc: T[], desc: T[]) => { 
+  let count = desc.length + (
+    Array.isArray(from)
+      ? from.length
+      : from.size
+  )
+  for (const value of from) { 
+    asc.push(value)
+    desc[--count] = value
+  }
+  return [asc, desc]
+}
+
+/**
+ * 深度优先搜索(栈模式)，回调规则为从里到外
+ * @param list 节点源
+ * @param up 节点下钻，返回当前节点的子节点
+ * @param callback 节点回调，返回false则停止搜索
+ * @description 应用场景：统计子节点的数据量
+ */
+export const forDfsStackEach = <T>(
+  list: T[] | Set<T>,
+  up: (data: T) => T[] | Set<T> | void,
+  callback: (data: T) => boolean
+) => { 
+  const [stack, locals] = mergeIns(list, [], [])
+  while (stack.length > 0) { 
+    const value = stack.pop()!
+    const result = up(value)
+    result === void 0 || mergeIns(result, stack, locals)
+  }
+  for (let i = locals.length; i > 0;) { 
+    if (!callback(locals[--i])) break
+  }
+}

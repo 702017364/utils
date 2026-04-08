@@ -623,7 +623,6 @@ describe('FlatTree', function () {
         sup: 'pid'
       })
       
-      debugger
       const result = tree.some((node) => node.id === 'non-existent')
       
       strictEqual(result, false)

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.6] - 2026-04-08
+
+### Added
+- 添加 [forDfsStackEach](src/each.ts) 方法，支撑在树结构中类似于统计子节点的数据量场景
+
+### Changed
+- [OfflineStorage](src/storage//offline.ts) 添加 @ts-ignore 忽略 ts 错误信息
+- 将 shims.env.d.ts 重命名为 shime.env.d.ts
+
+
 ## [1.7.5] - 2026-04-03
 
 ### Added

@@ -32,6 +32,7 @@ const config: SM4Mode_StringOutput = {
   iv,
 }
 
+// @ts-ignore
 const HEADER = '.' + sm4.encrypt(NAME, key, config)
 
 interface Head { 
