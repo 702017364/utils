@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -40,37 +40,37 @@
     "sub_storage"
   ],
   "devDependencies": {
-    "@babel/parser": "^7.26.9",
-    "@babel/traverse": "^7.26.9",
-    "@babel/types": "^7.26.9",
+    "@babel/parser": "^7.29.3",
+    "@babel/traverse": "^7.29.0",
+    "@babel/types": "^7.29.0",
     "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.0",
-    "@rollup/plugin-typescript": "^12.1.2",
-    "@types/babel__traverse": "^7.20.6",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^22.13.5",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/babel__traverse": "^7.28.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.12.3",
     "@types/sm-crypto": "^0.3.4",
-    "esbuild": "^0.25.0",
-    "glob": "^11.0.1",
-    "iconv-lite": "^0.6.3",
-    "mocha": "^10.2.0",
-    "puppeteer": "^24.3.0",
-    "rimraf": "^5.0.5",
-    "rollup": "^4.34.8",
+    "esbuild": "^0.28.0",
+    "glob": "^13.0.6",
+    "iconv-lite": "^0.7.2",
+    "mocha": "^11.7.5",
+    "puppeteer": "^24.43.0",
+    "rimraf": "^6.1.3",
+    "rollup": "^4.60.3",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
-    "uuid": "^11.1.0"
+    "uuid": "^14.0.0"
   },
   "dependencies": {
     "@type-challenges/utils": "^0.1.1",
     "@types/lodash-es": "^4.17.12",
-    "@vope/types": "^1.2.0",
+    "@vope/types": "^1.3.0",
     "csstype": "^3.2.3",
     "localforage": "^1.10.0",
-    "lodash-es": "^4.17.21",
-    "sm-crypto": "^0.3.13"
+    "lodash-es": "^4.18.1",
+    "sm-crypto": "^0.4.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
