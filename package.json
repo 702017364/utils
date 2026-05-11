@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -37,7 +37,8 @@
   "license": "ISC",
   "files": [
     "dist",
-    "sub_storage"
+    "sub_storage",
+    "CHANGELOG.md"
   ],
   "devDependencies": {
     "@babel/parser": "^7.29.3",

@@ -377,10 +377,12 @@ class ProductionEnvironment extends Environment {
     })
   }
 
-  private buildTS(entryPoint: string, outdir: string, effect?: boolean) { 
+  private buildTS(entryPoint: string, outdir: string, outbase: string, effect?: boolean) { 
     const file = join(__dirname, `tsconfig._${v4().replaceAll('-', '_')}.json`)
     const newTsconfig = cloneDeep(tsconfig)
-    newTsconfig.compilerOptions.declarationDir = outdir
+    const { compilerOptions } = newTsconfig
+    compilerOptions.declarationDir = outdir
+    compilerOptions.rootDir = outbase
     const list = entryPoint.split(re_effect)
     const lastValue = list[list.length - 1]
     list[0][0] === '.' && list.shift()
@@ -483,7 +485,7 @@ class ProductionEnvironment extends Environment {
           outdir,
           outbase,
         ),
-        this.buildTS(entryPoint.esm, outdir, effect),
+        this.buildTS(entryPoint.esm, outdir, outbase, effect),
       ])
       effect && this.buildPackage(entryPoint.cjs, outdir)
     })

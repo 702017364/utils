@@ -3,10 +3,10 @@
   "compilerOptions": {
     "paths": {
       "@vope/utils": [
-        "./src/index.ts"
+        "./dist/index"
       ],
       "@vope/utils/storage": [
-        "./src/storage/offline.ts"
+        "./sub_storage/offline"
       ],
       "@examples/*": [
         "./examples/*"
