@@ -9,13 +9,13 @@ export const forBfsEach = <T>(
   up: (data: T) => T[] | Set<T> | void,
   callback: (data: T) => boolean
 ) => { 
-  const stack = Array.isArray(list)
-    ? list.slice()
-    : Array.from(list)
-  for (const value of stack) { 
-    if (!callback(value)) break
-    const result = up(value)
-    result === void 0 || stack.push(...result)
+  const stack = [list]
+  for (const list of stack) { 
+    for (const value of list) { 
+      if (!callback(value)) break
+      const result = up(value)
+      result === void 0 || stack.push(result)
+    }
   }
 }
 

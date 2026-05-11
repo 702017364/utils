@@ -1,6 +1,6 @@
 {
   "name": "@vope/utils",
-  "version": "1.7.6",
+  "version": "1.8.0",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -60,7 +60,7 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.34.8",
     "tslib": "^2.8.1",
-    "typescript": "^5.9.2",
+    "typescript": "^6.0.3",
     "uuid": "^11.1.0"
   },
   "dependencies": {

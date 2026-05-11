@@ -1,72 +1,71 @@
 import { inputRegex } from '@vope/utils'
 import { deepStrictEqual } from 'assert'
 
+const flags = [, 'g', false as const]
+const polyfills = [true, false]
+
+interface Item { 
+  input: string
+  expected: string
+}
+
 describe('inputRegex()', function () {
-  it('转义特殊字符', function () {
-    const testCases = [
-      {
-        input: '$()*+.[?\\^{|-',
-        flags: false,
-        expected: '\\$\\(\\)\\*\\+\\.\\[\\?\\\\\\^\\{\\|\\-'
-      },
-      {
-        input: '$()*+.[?\\^{|',
-        flags: undefined,
-        expected: '\\$\\(\\)\\*\\+\\.\\[\\?\\\\\\^\\{\\|'
-      },
-      {
-        input: '$()*+.[?\\^{|',
-        flags: 'g',
-        expected: '\\$\\(\\)\\*\\+\\.\\[\\?\\\\\\^\\{\\|'
+  const each = (items: Item[]) => { 
+    const actuals: string[] = []
+    const expecteds: string[] = []
+    for (const { input, expected: value } of items) {
+      let actual: string[] = []
+      let expected: string[] = []
+      for (const polyfill of polyfills) {
+        for (const flag of flags) {
+          const source = flag === false
+            ? inputRegex(input, flag, polyfill)
+            : inputRegex(input, flag, polyfill).source
+          actual.push(source)
+          expected.push(value)
+        }
       }
-    ]
+      actuals.push(actual.join('|'))
+      expecteds.push(expected.join('|'))
+    }
+    deepStrictEqual(actuals, expecteds)
+  }
 
-    const stringResults = testCases
-      .filter(({ flags }) => flags === false)
-      .map(({ input }) => inputRegex(input, false))
-    
-    const regexResults = testCases
-      .filter(({ flags }) => flags !== false)
-      .map(({ input, flags }) => inputRegex(input, flags as string).source)
-
-    const expectedStringResults = testCases
-      .filter(({ flags }) => flags === false)
-      .map(({ expected }) => expected)
-      
-    const expectedRegexResults = testCases
-      .filter(({ flags }) => flags !== false)
-      .map(({ expected }) => expected)
-
-    deepStrictEqual(stringResults, expectedStringResults)
-    deepStrictEqual(regexResults, expectedRegexResults)
+  it('首字符', function () { 
+    each([
+      { input: 'a', expected: '\\x61' },
+      { input: 'aa', expected: '\\x61a' },
+      { input: 'A', expected: '\\x41' },
+      { input: '0', expected: '\\x30' },
+      { input: '9', expected: '\\x39' },
+      { input: '中', expected: '中' },
+    ])
   })
 
-  it('处理各种正则表达式标志', function () {
-    const testCases = [
+  it('歧义字符', function () { 
+    each([
       {
-        input: 'test',
-        flags: 'g',
-        expected: { source: 'test', flags: 'g' }
+        input: `,-=<>#&!%:;@~'\`" `,
+        expected: `\\x2c\\x2d\\x3d\\x3c\\x3e\\x23\\x26\\x21\\x25\\x3a\\x3b\\x40\\x7e\\x27\\x60\\x22\\x20`,
       },
+    ])
+  })
+
+  it('转义字符', function () { 
+    each([
       {
-        input: 'test',
-        flags: 'gi',
-        expected: { source: 'test', flags: 'gi' }
+        input: '$\\.*+^?()[\]{}|/',
+        expected: '\\$\\\\\\.\\*\\+\\^\\?\\(\\)\\[\\]\\{\\}\\|\\/',
       },
+    ])
+  })
+
+  it('空白符', function () { 
+    each([
       {
-        input: 'test',
-        flags: 'gm',
-        expected: { source: 'test', flags: 'gm' }
-      }
-    ]
-
-    const actuals = testCases.map(({ input, flags }) => {
-      const regex = inputRegex(input, flags)
-      return { source: regex.source, flags: regex.flags }
-    })
-    
-    const expected = testCases.map(({ expected }) => expected)
-
-    deepStrictEqual(actuals, expected)
+        input: '\u000c\u000a\u000d\u0009\u000b',
+        expected: '\\f\\n\\r\\t\\v',
+      },
+    ])
   })
 })

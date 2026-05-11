@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "sourceMap": false,
     "resolveJsonModule": true,
@@ -10,7 +10,11 @@
     "verbatimModuleSyntax": true,
     "lib": ["esnext", "dom"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "rootDir": "./",
+    "types": [
+      "@types/node"
+    ]
   },
   "exclude": [
     "dist",

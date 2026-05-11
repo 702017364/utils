@@ -1,16 +1,15 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./",
     "paths": {
       "@vope/utils": [
-        "src/index.ts"
+        "./src/index.ts"
       ],
       "@vope/utils/storage": [
-        "src/storage/offline.ts"
+        "./src/storage/offline.ts"
       ],
       "@examples/*": [
-        "examples/*"
+        "./examples/*"
       ]
     },
     "types": [
