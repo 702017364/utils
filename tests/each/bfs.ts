@@ -1,4 +1,4 @@
-import { forBfsEach } from '@vope/utils'
+import { forBfsAsyncEach, forBfsEach, wait } from '@vope/utils'
 import { deepStrictEqual } from 'assert'
 
 interface Item { 
@@ -271,5 +271,35 @@ describe('forBfsEach()', function () {
     
     // 广度优先：A, B, C, D, E, F, G
     deepStrictEqual(result.map(i => i.id), ['1', '2', '3', '4', '5', '6', '7'])
+  })
+})
+
+interface AsyncItem { 
+  id: string
+  label: string
+  wait: number
+  children?: Item[]
+}
+
+describe('forBfsAsyncEach()', function () {
+  it('广度优先异步遍历数组', async function () {
+    const result: AsyncItem[] = []
+    const list: AsyncItem[] = [
+      { id: '1', label: 'A', wait: 50 },
+      { id: '2', label: 'B', wait: 15 },
+      { id: '3', label: 'C', wait: 20 }
+    ]
+    
+    await forBfsAsyncEach(
+      list,
+      () => [],
+      async (data) => {
+        result.push(data)
+        await wait(data.wait)
+        return true
+      }
+    )
+    
+    deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
   })
 })

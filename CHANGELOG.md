@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.2] - 2026-09-15
+### Added
+- 添加 [forBfsAsyncEach](src/each.ts) 方法，[forBfsEach](src/each.ts) 异步版本
+- 添加 [forDfsAsyncEach](src/each.ts) 方法，[forDfsEach](src/each.ts) 异步版本
+- 添加 [forDfsStackAsyncEach](src/each.ts) 方法，[forDfsStackEach](src/each.ts) 异步版本
+
 ## [1.9.1] - 2026-05-11
 ### Fixed
 - 修复升级依赖 typescript 引起的 .d.ts 文件生成路径错误问题

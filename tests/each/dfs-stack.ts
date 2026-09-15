@@ -1,4 +1,4 @@
-import { forDfsStackEach } from '@vope/utils'
+import { forDfsStackAsyncEach, forDfsStackEach, wait } from '@vope/utils'
 import { deepStrictEqual } from 'assert'
 
 interface Item { 
@@ -315,5 +315,36 @@ describe('forDfsStackEach()', function () {
     
     // 从里到外（后序遍历）：10, 11, 7, 8, 9, 4, 5, 12, 13, 14, 6, 18, 16, 17, 2, 3, 15, 1
     deepStrictEqual(result.map(i => i.id), ['10', '11', '7', '8', '9', '4', '5', '12', '13', '14', '6', '18', '16', '17', '2', '3', '15', '1'])
+  })
+})
+
+interface AsyncItem { 
+  id: string
+  label: string
+  wait: number
+  children?: Item[]
+}
+
+describe('forDfsStackAsyncEach()', function () { 
+  it('深度优先栈异步遍历数组', async function () {
+    const result: AsyncItem[] = []
+    const list: AsyncItem[] = [
+      { id: '1', label: 'A', wait: 50 },
+      { id: '2', label: 'B', wait: 15 },
+      { id: '3', label: 'C', wait: 20 }
+    ]
+    
+    await forDfsStackAsyncEach(
+      list,
+      (value) => [],
+      async (data) => {
+        result.push(data)
+        await wait(data.wait)
+        return true
+      }
+    )
+    
+    // 从里到外，但没有子节点，所以顺序不变
+    deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
   })
 })

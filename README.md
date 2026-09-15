@@ -12,6 +12,9 @@ pnpm add @vope/utils
 yarn add @vope/utils
 ```
 
+## Logs
+[CHANGELOG](./CHANGELOG.md)
+
 ## API 文档
 
 ### 异步控制
