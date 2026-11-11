@@ -201,6 +201,29 @@ describe('forBfsEach()', function () {
     deepStrictEqual(result.map(i => i.id), ['1', '2'])
   })
 
+  it('在较深层返回 false 时彻底停止遍历', function () {
+    const result: Item[] = []
+    const tree: Item = {
+      id: '1',
+      label: 'Root',
+      children: [
+        { id: '2', label: 'Child 1', children: [{ id: '4', label: 'Grandchild' }] },
+        { id: '3', label: 'Child 2' }
+      ]
+    }
+
+    forBfsEach(
+      [tree],
+      value => value.children,
+      value => {
+        result.push(value)
+        return value.id !== '3'
+      }
+    )
+
+    deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
+  })
+
   it('空列表遍历', function () {
     const result: Item[] = []
     
@@ -278,11 +301,11 @@ interface AsyncItem {
   id: string
   label: string
   wait: number
-  children?: Item[]
+  children?: AsyncItem[]
 }
 
 describe('forBfsAsyncEach()', function () {
-  it('广度优先异步遍历数组', async function () {
+  it('按广度优先顺序等待每个异步回调', async function () {
     const result: AsyncItem[] = []
     const list: AsyncItem[] = [
       { id: '1', label: 'A', wait: 50 },
@@ -294,12 +317,103 @@ describe('forBfsAsyncEach()', function () {
       list,
       () => [],
       async (data) => {
-        result.push(data)
         await wait(data.wait)
+        result.push(data)
         return true
       }
     )
     
+    deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
+  })
+
+  it('广度优先异步遍历 Set 和多层子节点', async function () {
+    const result: AsyncItem[] = []
+    const first: AsyncItem = {
+      id: '1',
+      label: 'A',
+      wait: 0,
+      children: [
+        { id: '3', label: 'C', wait: 0 },
+        { id: '4', label: 'D', wait: 0, children: [{ id: '7', label: 'G', wait: 0 }] }
+      ]
+    }
+    const second: AsyncItem = {
+      id: '2',
+      label: 'B',
+      wait: 0,
+      children: [
+        { id: '5', label: 'E', wait: 0 },
+        { id: '6', label: 'F', wait: 0 }
+      ]
+    }
+
+    await forBfsAsyncEach(
+      new Set([first, second]),
+      value => value.children,
+      async value => {
+        await wait()
+        result.push(value)
+        return true
+      }
+    )
+
+    deepStrictEqual(result.map(i => i.id), ['1', '2', '3', '4', '5', '6', '7'])
+  })
+
+  it('异步回调返回 false 时彻底停止遍历', async function () {
+    const result: AsyncItem[] = []
+    const tree: AsyncItem = {
+      id: '1',
+      label: 'Root',
+      wait: 0,
+      children: [
+        { id: '2', label: 'Child 1', wait: 0, children: [{ id: '4', label: 'Grandchild', wait: 0 }] },
+        { id: '3', label: 'Child 2', wait: 0 }
+      ]
+    }
+
+    await forBfsAsyncEach(
+      [tree],
+      value => value.children,
+      async value => {
+        result.push(value)
+        return value.id !== '3'
+      }
+    )
+
+    deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
+  })
+
+  it('空数组和空 Set 不调用回调', async function () {
+    let callbackCount = 0
+    const callback = async () => {
+      callbackCount++
+      return true
+    }
+
+    await forBfsAsyncEach([], () => [], callback)
+    await forBfsAsyncEach(new Set<AsyncItem>(), () => [], callback)
+
+    deepStrictEqual(callbackCount, 0)
+  })
+
+  it('up 返回 void 时继续遍历当前列表', async function () {
+    const result: AsyncItem[] = []
+    const list: AsyncItem[] = [
+      { id: '1', label: 'A', wait: 0 },
+      { id: '2', label: 'B', wait: 0 },
+      { id: '3', label: 'C', wait: 0 }
+    ]
+
+    await forBfsAsyncEach(
+      list,
+      () => void 0,
+      async value => {
+        result.push(value)
+        return true
+      }
+    )
+
     deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
   })
 })

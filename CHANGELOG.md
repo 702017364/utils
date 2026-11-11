@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.3] - 2026-11-11
+### Fixed
+- 修复 [forBfsEach](src/each.ts)、[forBfsAsyncEach](src/each.ts)、[forDfsEach](src/each.ts) 和 [forDfsAsyncEach](src/each.ts) 在嵌套遍历中回调返回 `false` 后未彻底停止的问题
+
+### Changed
+- 完善 [forBfsEach](src/each.ts)、[forBfsAsyncEach](src/each.ts) 和 [forDfsAsyncEach](src/each.ts) 单元测试
+
+
 ## [1.9.2] - 2026-09-15
 ### Added
 - 添加 [forBfsAsyncEach](src/each.ts) 方法，[forBfsEach](src/each.ts) 异步版本

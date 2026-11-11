@@ -12,7 +12,7 @@ export const forBfsEach = <T>(
   const stack = [list]
   for (const list of stack) { 
     for (const value of list) { 
-      if (!callback(value)) break
+      if (!callback(value)) return
       const result = up(value)
       result === void 0 || stack.push(result)
     }
@@ -33,7 +33,7 @@ export const forBfsAsyncEach = async <T>(
   const stack = [list]
   for (const list of stack) { 
     for (const value of list) { 
-      if (!await callback(value)) break
+      if (!await callback(value)) return
       const result = up(value)
       result === void 0 || stack.push(result)
     }
@@ -66,7 +66,7 @@ export const forDfsEach = <T>(
   const stack = reverseMergeIn(list)
   while (stack.length > 0) { 
     const value = stack.pop()!
-    if (!callback(value)) break
+    if (!callback(value)) return
     const result = up(value)
     result === void 0 || reverseMergeIn(result, stack)
   }
@@ -86,7 +86,7 @@ export const forDfsAsyncEach = async <T>(
   const stack = reverseMergeIn(list)
   while (stack.length > 0) { 
     const value = stack.pop()!
-    if (!await callback(value)) break
+    if (!await callback(value)) return
     const result = up(value)
     result === void 0 || reverseMergeIn(result, stack)
   }

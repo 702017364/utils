@@ -322,7 +322,7 @@ interface AsyncItem {
   id: string
   label: string
   wait: number
-  children?: Item[]
+  children?: AsyncItem[]
 }
 
 describe('forDfsStackAsyncEach()', function () { 
@@ -338,13 +338,103 @@ describe('forDfsStackAsyncEach()', function () {
       list,
       (value) => [],
       async (data) => {
-        result.push(data)
         await wait(data.wait)
+        result.push(data)
         return true
       }
     )
     
-    // 从里到外，但没有子节点，所以顺序不变
+    // 每个异步回调完成后才处理下一个节点
     deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
+  })
+
+  it('深度优先栈异步遍历 Set 和多层子节点', async function () {
+    const result: AsyncItem[] = []
+    const list = new Set<AsyncItem>([
+      {
+        id: '1',
+        label: 'Root 1',
+        wait: 0,
+        children: [
+          {
+            id: '2',
+            label: 'Child 1',
+            wait: 0,
+            children: [{ id: '3', label: 'Grandchild 1', wait: 0 }]
+          },
+          { id: '4', label: 'Child 2', wait: 0 }
+        ]
+      },
+      { id: '5', label: 'Root 2', wait: 0 }
+    ])
+
+    await forDfsStackAsyncEach(
+      list,
+      (value) => value.children,
+      async (value) => {
+        await wait(value.wait)
+        result.push(value)
+        return true
+      }
+    )
+
+    // 栈模式按后序遍历，并保持同级节点的原始顺序
+    deepStrictEqual(result.map(i => i.id), ['3', '2', '4', '1', '5'])
+  })
+
+  it('异步回调返回 false 时停止遍历', async function () {
+    const result: AsyncItem[] = []
+    const list: AsyncItem[] = [
+      { id: '1', label: 'A', wait: 0 },
+      { id: '2', label: 'B', wait: 0 },
+      { id: '3', label: 'C', wait: 0 },
+      { id: '4', label: 'D', wait: 0 }
+    ]
+
+    await forDfsStackAsyncEach(
+      list,
+      (value) => [],
+      async (value) => {
+        await wait(value.wait)
+        result.push(value)
+        return value.id !== '3'
+      }
+    )
+
+    deepStrictEqual(result.map(i => i.id), ['1', '2', '3'])
+  })
+
+  it('空列表不调用回调', async function () {
+    const result: AsyncItem[] = []
+
+    await forDfsStackAsyncEach(
+      [],
+      (value) => [],
+      async (value) => {
+        result.push(value)
+        return true
+      }
+    )
+
+    deepStrictEqual(result, [])
+  })
+
+  it('up 返回 void 时仍异步遍历所有节点', async function () {
+    const result: AsyncItem[] = []
+    const list: AsyncItem[] = [
+      { id: '1', label: 'A', wait: 0 },
+      { id: '2', label: 'B', wait: 0 }
+    ]
+
+    await forDfsStackAsyncEach(
+      list,
+      (value) => void 0,
+      async (value) => {
+        result.push(value)
+        return true
+      }
+    )
+
+    deepStrictEqual(result.map(i => i.id), ['1', '2'])
   })
 })
