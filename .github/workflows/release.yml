@@ -1,0 +1,13 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'   # 触发条件按需调整
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # 必须
+      contents: read    # 按需
