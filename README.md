@@ -32,7 +32,11 @@ yarn add @vope/utils
 |--------|------|
 | FlatTree | 扁平树 |
 | forBfsEach | 广度优先搜索 |
+| forBfsAsyncEach | 广度优先异步搜索 |
 | forDfsEach | 深度优先搜索 |
+| forDfsAsyncEach | 深度优先异步搜索 |
+| forDfsStackEach | 深度优先栈模式搜索（从里到外回调） |
+| forDfsStackAsyncEach | 深度优先栈模式异步搜索（从里到外回调） |
 
 ### 数据转换
 
